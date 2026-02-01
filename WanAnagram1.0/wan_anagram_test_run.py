@@ -12,7 +12,7 @@ print("Importing libraries done...")
 
 #importing pipeline
 from pipeline_wan_anagram import WanAnagramPipeline
-from views import HorizontalFlipView, VerticalFlipView, TimeReverseView
+from utils.views import HorizontalFlipView, VerticalFlipView, TimeReverseView
 print("Importing pipeline done...")
 
 #For reproducibility

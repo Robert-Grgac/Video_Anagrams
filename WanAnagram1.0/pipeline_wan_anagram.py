@@ -10,9 +10,9 @@ from diffusers import WanPipeline
 from diffusers.pipelines.wan.pipeline_output import WanPipelineOutput
 
 # Custom class imports
-from views import ViewTransform, IdentityView
-from schedules import AnagramSchedule
-from mixers import cfg, mix_joint, mix_anagram
+from utils.views import ViewTransform, IdentityView
+from utils.schedules import AnagramSchedule
+from utils.mixers import cfg, mix_joint, mix_anagram
 
 class WanAnagramPipeline(WanPipeline):
     """
