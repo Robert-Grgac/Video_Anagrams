@@ -1,0 +1,492 @@
+[
+    {
+        "id": 0,
+        "subject1": "an airplane",
+        "subject2": "an automobile",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 1,
+        "subject1": "an airplane",
+        "subject2": "a bird",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 2,
+        "subject1": "an airplane",
+        "subject2": "a cat",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 3,
+        "subject1": "an airplane",
+        "subject2": "a deer",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 4,
+        "subject1": "an airplane",
+        "subject2": "a dog",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 5,
+        "subject1": "an airplane",
+        "subject2": "a frog",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 6,
+        "subject1": "an airplane",
+        "subject2": "a horse",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 7,
+        "subject1": "an airplane",
+        "subject2": "a ship",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 8,
+        "subject1": "an airplane",
+        "subject2": "a truck",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 9,
+        "subject1": "an automobile",
+        "subject2": "a bird",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 10,
+        "subject1": "an automobile",
+        "subject2": "a cat",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 11,
+        "subject1": "an automobile",
+        "subject2": "a deer",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 12,
+        "subject1": "an automobile",
+        "subject2": "a dog",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 13,
+        "subject1": "an automobile",
+        "subject2": "a frog",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 14,
+        "subject1": "an automobile",
+        "subject2": "a horse",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 15,
+        "subject1": "an automobile",
+        "subject2": "a ship",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 16,
+        "subject1": "an automobile",
+        "subject2": "a truck",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 17,
+        "subject1": "a bird",
+        "subject2": "a cat",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 18,
+        "subject1": "a bird",
+        "subject2": "a deer",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 19,
+        "subject1": "a bird",
+        "subject2": "a dog",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 20,
+        "subject1": "a bird",
+        "subject2": "a frog",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 21,
+        "subject1": "a bird",
+        "subject2": "a horse",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 22,
+        "subject1": "a bird",
+        "subject2": "a ship",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 23,
+        "subject1": "a bird",
+        "subject2": "a truck",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 24,
+        "subject1": "a cat",
+        "subject2": "a deer",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 25,
+        "subject1": "a cat",
+        "subject2": "a dog",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 26,
+        "subject1": "a cat",
+        "subject2": "a frog",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 27,
+        "subject1": "a cat",
+        "subject2": "a horse",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 28,
+        "subject1": "a cat",
+        "subject2": "a ship",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 29,
+        "subject1": "a cat",
+        "subject2": "a truck",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 30,
+        "subject1": "a deer",
+        "subject2": "a dog",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 31,
+        "subject1": "a deer",
+        "subject2": "a frog",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 32,
+        "subject1": "a deer",
+        "subject2": "a horse",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 33,
+        "subject1": "a deer",
+        "subject2": "a ship",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 34,
+        "subject1": "a deer",
+        "subject2": "a truck",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 35,
+        "subject1": "a dog",
+        "subject2": "a frog",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 36,
+        "subject1": "a dog",
+        "subject2": "a horse",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 37,
+        "subject1": "a dog",
+        "subject2": "a ship",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 38,
+        "subject1": "a dog",
+        "subject2": "a truck",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 39,
+        "subject1": "a frog",
+        "subject2": "a horse",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 40,
+        "subject1": "a frog",
+        "subject2": "a ship",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 41,
+        "subject1": "a frog",
+        "subject2": "a truck",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 42,
+        "subject1": "a horse",
+        "subject2": "a ship",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 43,
+        "subject1": "a horse",
+        "subject2": "a truck",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 44,
+        "subject1": "a ship",
+        "subject2": "a truck",
+        "style": "a painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 45,
+        "subject1": "a snowy mountain village",
+        "subject2": "a horse",
+        "style": "an oil painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 46,
+        "subject1": "houseplants",
+        "subject2": "marilyn monroe",
+        "style": "a cubist painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 48,
+        "subject1": "an old man",
+        "subject2": "a snowy mountain village",
+        "style": "an oil painting of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    },
+    {
+        "id": 49,
+        "subject1": "an old man",
+        "subject2": "a snowy mountain village",
+        "style": "a street art of",
+        "transformations": [
+            "flip",
+            "rotation"
+        ]
+    }
+]
