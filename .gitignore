@@ -21,3 +21,10 @@ sbatch/
 
 # Python
 sandbox.py
+
+#Files
+*.pt
+*.png
+
+#Folders
+wandb/

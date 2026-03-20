@@ -22,7 +22,7 @@ print("Importing pipeline done...")
 prompt_generator = PromptGenerator()
 number_of_prompts = 1
 anagram_style = "painting" #Options are 'painting', 'street art', 'cubist painting', 'oil painting' or None for random
-heuristic_style_list = ['street art','cubist painting', 'watercolor painting', 'vintage poster', 'pencil sketch', 'oil painting'] #Options are 'street art', 'minimalist illustration', 'cubist painting', 'watercolor painting', 'vintage poster', 'pencil sketch', 'oil painting' or None for random
+heuristic_style_list = ['cubist painting', 'pencil sketch', 'oil painting'] #Options are 'street art', 'minimalist illustration', 'cubist painting', 'watercolor painting', 'vintage poster', 'pencil sketch', 'oil painting' or None for random
 preffered_view = "rotation" #Options are 'flip' or 'rotation' 
 #anagram_prompt_list = prompt_generator.generate_static_visual_anagram_prompt(id=None, style=anagram_style, NumOfPrompts=number_of_prompts, preffered_view=preffered_view)
 #heuristic_prompt_list = prompt_generator.generate_static_heuristic_prompt(id=None, styles=heuristic_style_list, NumOfPrompts=number_of_prompts, preffered_view=preffered_view)
