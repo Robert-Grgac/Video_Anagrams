@@ -28,8 +28,8 @@ if use_same_seed:
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
     torch.autograd.set_detect_anomaly(True)
-    loaded_latents = torch.load("/home/s2710099/projects/Video_Anagrams/latents/initial_latents.pt", weights_only=True)
-    print("Using same seed for reproducibility, loaded latents from /home/s2710099/projects/Video_Anagrams/latents/initial_latents.pt")
+    loaded_latents = torch.load("/home/s2710099/projects/Video_Anagrams/latents/initial_latent/initial_latents.pt", weights_only=True)
+    print("Using same seed for reproducibility, loaded latents from /home/s2710099/projects/Video_Anagrams/latents/initial_latent/initial_latents.pt")
 else:
     loaded_latents = None
     print("Not using same seed, latents will be generated on the fly...") 
@@ -66,52 +66,61 @@ asset_names_list = ["face1", "face2", "dog", "cat", "skull"]
 prompt_list = [prompt1, prompt2, prompt3, prompt4, prompt5, prompt6, prompt7]
 inital_alpha_list = [ 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
 transfer_steps_list= [(5,2), (10,5),(15,7), (20,10), (25,12), (30,15), (45,22)]
-ref_latents_dir_list = ["./precomputed_deterministic_inversion_latents_face1", "./precomputed_deterministic_inversion_latents_face2", "./precomputed_deterministic_inversion_latents_dog", "./precomputed_deterministic_inversion_latents_cat", "./precomputed_deterministic_inversion_latents_skull"]
+ref_latents_dir_list = ["./latents/precomputed_deterministic_inversion_latents_face1", "./latents/precomputed_deterministic_inversion_latents_face2", "./latents/precomputed_deterministic_inversion_latents_dog", "./latents/precomputed_deterministic_inversion_latents_cat", "./latents/precomputed_deterministic_inversion_latents_skull"]
+
+# Heuristic grid search
+
+margin_list = [None, 0.002, 0.003, 0.004, 0.005]
+steepness_list = [100, 200, 300, 500, 700, 1000]
+direct_transfer_steps= 45
+decayed_transfer_steps = 22
+initial_alpha = 0.4
 
 
-for idx, ref_latents_dir in enumerate(ref_latents_dir_list):
-    direct_transfer_steps= 45
-    decayed_transfer_steps = 22
-    alpha = 0.4
-    for pidx, p in enumerate(prompt_list):
-        
-        run_name = f"{asset_names_list[idx]}_prompt_{pidx}_alpha_{alpha}"
+
+for margin in margin_list:
+    for steepness in steepness_list:
+        run_name = f"face1_prompt1_margin_{margin}_steepness_{steepness}"
         with wandb.init(
-            project="wan-phase-experiments-2",
+            project="wan-heuristic-experiments-2",
             name=run_name,
             config={
-                "asset_name": asset_names_list[idx],
-                "prompt_idx": pidx,
-                "prompt": p,
-                "ref_latents_dir": ref_latents_dir,
+                "description": "Heuristic grid search for alpha blending based on cosine distance and a sigmoid damping function. Using face1 asset and prompt1 for all runs.",
+                "asset_name": "face1",
+                "prompt_idx": 2,
+                "prompt": prompt1,
+                "ref_latents_dir": "./latents/precomputed_deterministic_inversion_latents_face1",
                 "direct_transfer_steps": direct_transfer_steps,
                 "decayed_transfer_steps": decayed_transfer_steps,
-                "initial_alpha": alpha,
+                "initial_alpha": initial_alpha,
             }
         ) as run:
             video = pipe(
                     # Standard params
-                        prompt=p,
+                        prompt=prompt1, #FIXED PROMPT
                         negative_prompt=negative_prompt,
                         height=height,
                         width=width,
                         num_frames=num_frames,
                         num_inference_steps=num_inference_steps,
                         latents=loaded_latents.clone() if use_same_seed else None,
-                        guidance_scale=guidance_scale,
+                        guidance_scale=0.0, #NO CLASSIFIER FREE GUIDANCE FOR HEURISTIC GRID SEARCH
                     #PTM params
                         direct_transfer_steps=direct_transfer_steps,
                         decayed_transfer_steps=decayed_transfer_steps,
                         exponent=0.5,
-                        initial_alpha=alpha,
-                        ref_latents_dir=ref_latents_dir,
-                    )
+                        initial_alpha=initial_alpha,
+                        ref_latents_dir="./latents/precomputed_deterministic_inversion_latents_face1",
+                        use_blending_heuristic=True,
+                        margin=margin,
+                        steepness=steepness,
+                )
 
             frames = video.get('frames', video.get('images', video))
 
             frames = frames[0]  # Remove batch dimension -> [frames, height, width, channels]
             frame_list = [frames[i] for i in range(frames.shape[0])]
 
-            export_to_video(frame_list, f"/home/s2710099/outputs/deterministic/WanPTDiffusion_{asset_names_list[idx]}_prompt_{pidx}.mp4")
+            export_to_video(frame_list, f"/home/s2710099/outputs/deterministic/{run_name}.mp4")
     
 wandb.finish()

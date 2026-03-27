@@ -1,15 +1,15 @@
-import math
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import torch
-import PIL.Image
 import glob
 import os
+import math
 
 from diffusers import WanPipeline
 from diffusers.pipelines.wan.pipeline_output import WanPipelineOutput
 from diffusers.callbacks import MultiPipelineCallbacks, PipelineCallback
 import wandb
+from utils.constants import GOOD_AVG_COSINE_DIST_LIST
 
 class WanPTDiffusionPipeline(WanPipeline):
     
@@ -25,27 +25,29 @@ class WanPTDiffusionPipeline(WanPipeline):
         return ref_latents
     
     @staticmethod
-    def _phase_substitute(x_dec: torch.Tensor, ref_latent: torch.Tensor, alpha: float, step: int) -> torch.Tensor:
+    def _phase_substitute(x_dec: torch.Tensor, ref_latent: torch.Tensor, alpha: float, step: int, conditional_latent: torch.Tensor) -> torch.Tensor:
         ref_latent_fft = torch.fft.fft2(ref_latent)
         ref_latent_angle = torch.angle(ref_latent_fft)
-        ref_latent_mag = torch.abs(ref_latent_fft)
+        
         x_dec_fft = torch.fft.fft2(x_dec)
         x_dec_mag = torch.abs(x_dec_fft)
         x_dec_angle = torch.angle(x_dec_fft)
         mixed_angle = ref_latent_angle * alpha + (1 - alpha) * x_dec_angle
         
+        conditional_latent_fft = torch.fft.fft2(conditional_latent)
+        conditional_latent_mag = torch.abs(conditional_latent_fft)
+        
         #Log the cosine distance between the reference and the x_dec angle
-        phase_diff = ref_latent_angle - x_dec_angle
-        phase_alignment = torch.cos(phase_diff).mean()  # 1.0 = perfectly aligned
-        mse_mag = torch.nn.functional.mse_loss(ref_latent_mag, x_dec_mag)
-        wandb.log({"cosine_dist_mean": phase_alignment.item(), "mse_mag": mse_mag.item()}, step=step)
+        ref_cosine_dist = torch.cos(ref_latent_angle - x_dec_angle).mean() 
+        mse_mag = torch.nn.functional.mse_loss(conditional_latent_mag, x_dec_mag)
+        wandb.log({"ref_cosine_dist_mean": ref_cosine_dist.item(), "cond_mse_mag": mse_mag.item(), "alpha": alpha}, step=step)
         
         x_dec_fft = x_dec_mag * torch.cos(mixed_angle) + \
                     x_dec_mag * torch.sin(mixed_angle) * torch.complex(torch.zeros_like(x_dec_mag),
                                                                        torch.ones_like(x_dec_mag))
         x_dec = torch.fft.ifft2(x_dec_fft).real
         
-        return x_dec
+        return x_dec, ref_cosine_dist
     
     @torch.no_grad()
     def __call__(
@@ -79,7 +81,10 @@ class WanPTDiffusionPipeline(WanPipeline):
         initial_alpha: float = 1,
         inital_ref_latent: Optional[torch.Tensor] = None,
         use_preloaded_latents: bool = True,
+        use_blending_heuristic: bool = True,
         ref_latents_dir: Optional[str] = "./precomputed_deterministic_inversion_latents",
+        margin: float = None,
+        steepness: float = None,
     ):
 
         if isinstance(callback_on_step_end, (PipelineCallback, MultiPipelineCallbacks)):
@@ -188,6 +193,12 @@ class WanPTDiffusionPipeline(WanPipeline):
         
         if inital_ref_latent is not None:
             ref_latent = inital_ref_latent.to(device)
+            
+        conditional_latent = latents.clone()
+        
+        #Initialize heurisitc vlaues
+        ref_cosine_dist = 0.0
+        
 
         # -------------------------
         # Denoising loop + PTM
@@ -220,16 +231,22 @@ class WanPTDiffusionPipeline(WanPipeline):
                 else:
                     timestep = t.expand(latents.shape[0])
 
+                conditional_latent_input = conditional_latent.to(transformer_dtype)
+                batched_hidden = torch.cat([latent_model_input, conditional_latent_input], dim=0)
+                batched_timestep = timestep.repeat(2)
+                batched_prompt_embeds = prompt_embeds.repeat(2, *([1] * (prompt_embeds.dim() - 1)))
+    
                 # Cond forward
                 with current_model.cache_context("cond"):
-                    noise_pred = current_model(
-                        hidden_states=latent_model_input,
-                        timestep=timestep,
-                        encoder_hidden_states=prompt_embeds,
+                    batched_noise_pred = current_model(
+                        hidden_states=batched_hidden,
+                        timestep=batched_timestep,
+                        encoder_hidden_states=batched_prompt_embeds,
                         attention_kwargs=attention_kwargs,
                         return_dict=False,
                     )[0]
-
+                noise_pred, cond_noise_pred = batched_noise_pred.chunk(2, dim=0)
+                
                 # CFG
                 if self.do_classifier_free_guidance:
                     with current_model.cache_context("uncond"):
@@ -262,19 +279,34 @@ class WanPTDiffusionPipeline(WanPipeline):
                     latents, ref_latent = batched_result.chunk(2, dim=0)
                 else:
                     # scheduler step for main latents
-                    latents = self.scheduler.step(noise_pred, t, latents, return_dict=False)[0]
+                    batched_noise_for_scheduler = torch.cat([noise_pred, cond_noise_pred], dim=0)
+                    batched_latents = torch.cat([latents, conditional_latent], dim=0)
+                    batched_result = self.scheduler.step(batched_noise_for_scheduler, t, batched_latents, return_dict=False)[0]
+                    latents, conditional_latent = batched_result.chunk(2, dim=0)
                     ref_latent = ref_latents_list[i]
                 
                 if i < direct_transfer_steps:
-                    alpha = initial_alpha
+                    base_alpha = initial_alpha
                 elif i < (direct_transfer_steps + decayed_transfer_steps - 1):
                     decay_progress = (i - direct_transfer_steps) / max(decayed_transfer_steps - 1, 1)
-                    alpha = initial_alpha * (1 - decay_progress ** exponent)
+                    base_alpha = initial_alpha * (1 - decay_progress ** exponent)
                 else:
-                    alpha = 0.0
+                    base_alpha = 0.0
+                
+                if use_blending_heuristic and i > 0:  # skip step 0 (no valid metric yet)
+                    good_ref = GOOD_AVG_COSINE_DIST_LIST[i]
+                    if margin is None:
+                        margin = 2 * math.sqrt(max(good_ref, 0.0))
+                    excess = ref_cosine_dist - (good_ref + margin)
+                    damping = 1.0 / (1.0 + math.exp(steepness * excess)) #apply sigmoid damping based on how much the ref_cosine_dist exceeds the good_ref + margin
+                    alpha = base_alpha * damping
+                else:
+                    alpha = base_alpha
 
-                latents = self._phase_substitute(x_dec=latents, ref_latent=ref_latent, alpha=alpha, step=i)
-
+                alpha = max(0.0, alpha)
+                    
+                latents, ref_cosine_dist = self._phase_substitute(x_dec=latents, ref_latent=ref_latent, alpha=alpha, step=i, conditional_latent=conditional_latent)
+                
                 # callback
                 if callback_on_step_end is not None:
                     callback_kwargs = {}

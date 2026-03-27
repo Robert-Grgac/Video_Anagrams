@@ -27,7 +27,7 @@ torch.backends.cudnn.deterministic = True
 torch.autograd.set_detect_anomaly(True)
 os.environ['HF_HUB_OFFLINE']='1'
 os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
-loaded_latents = torch.load("/home/s2710099/projects/Video_Anagrams/latents/initial_latents.pt", weights_only=True)
+loaded_latents = torch.load("/home/s2710099/projects/Video_Anagrams/latents/inital_latent/initial_latents.pt", weights_only=True)
 
 #Pipeline setup
 dtype = torch.bfloat16
@@ -70,8 +70,8 @@ guidance_scale = 7.0
 #Gridearch parameters
 prompt_list = [prompt1, prompt2, prompt3, prompt4, prompt5, prompt6, prompt7]
 inital_alpha_list = [ 0.8, 0.6, 0.4, 0.2, 0.15, 0.1]
-deterministic_latent_list, deterministic_image_names = load_latents("./deterministic_inversion_latents")
-non_deterministic_latent_list, non_deterministic_image_names = load_latents("./non_deterministic_inversion_latents")
+#deterministic_latent_list, deterministic_image_names = load_latents("./deterministic_inversion_latents")
+#non_deterministic_latent_list, non_deterministic_image_names = load_latents("./non_deterministic_inversion_latents")
 
 
 
@@ -84,14 +84,19 @@ video = pipe(
             num_frames=num_frames,
             num_inference_steps=num_inference_steps,
             latents=loaded_latents.clone(),
-            guidance_scale=guidance_scale,
+            guidance_scale=0.0,
         #PTM params
             direct_transfer_steps=15, #Could also play with direct and decay transfer steps
             decayed_transfer_steps=7,
             exponent=0.5,
-            initial_alpha=1.0,
-            ref_latents_dir="./precomputed_deterministic_inversion_latents",
-            use_precomputed_ref_latents=True
+            initial_alpha=0.4,
+            ref_latents_dir="./latents/precomputed_deterministic_inversion_latents_face1",
+            use_preloaded_latents=True,
+            use_blending_heuristic=True,
+            ref_threshold = 0.05,
+            ref_factor = 0.01,
+            cond_threshold = 400,
+            cond_factor = 0.01,
         )
 
 frames = video.get('frames', video.get('images', video))
@@ -101,6 +106,6 @@ print(f"Frames shape: {frames.shape}")
 frames = frames[0]  # Remove batch dimension -> [frames, height, width, channels]
 frame_list = [frames[i] for i in range(frames.shape[0])]
 
-export_to_video(frame_list, f"/home/s2710099/outputs/deterministic/WanPTDiffusion_{deterministic_image_names[i]}_prompt_{j}_alpha_{alpha}.mp4", fps=16)
+export_to_video(frame_list, f"/home/s2710099/outputs/deterministic/WanPTDiffusion_test.mp4", fps=16)
 
-print(f"Video saved to /home/s2710099/outputs/deterministic/WanPTDiffusion_{deterministic_image_names[i]}_prompt_{j}_alpha_{alpha}.mp4")
+print(f"Video saved to /home/s2710099/outputs/deterministic/WanPTDiffusion_test.mp4")
