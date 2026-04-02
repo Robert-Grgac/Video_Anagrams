@@ -47,7 +47,7 @@ class WanPTDiffusionPipeline(WanPipeline):
                                                                        torch.ones_like(x_dec_mag))
         x_dec = torch.fft.ifft2(x_dec_fft).real
         
-        return x_dec, ref_cosine_dist
+        return x_dec, ref_cosine_dist.item()
     
     @torch.no_grad()
     def __call__(
@@ -81,10 +81,16 @@ class WanPTDiffusionPipeline(WanPipeline):
         initial_alpha: float = 1,
         inital_ref_latent: Optional[torch.Tensor] = None,
         use_preloaded_latents: bool = True,
-        use_blending_heuristic: bool = True,
+        use_blending_heuristic_version_1: bool = False,
+        use_blending_heuristic_version_2: bool = False,
+        use_blending_heuristic_version_3: bool = False,
         ref_latents_dir: Optional[str] = "./precomputed_deterministic_inversion_latents",
-        margin: float = None,
         steepness: float = None,
+        gain: float = 2.0,
+        Kp: float = None,
+        Ki: float = None,
+        max_alpha_delta: float = None
+        
     ):
 
         if isinstance(callback_on_step_end, (PipelineCallback, MultiPipelineCallbacks)):
@@ -198,6 +204,11 @@ class WanPTDiffusionPipeline(WanPipeline):
         
         #Initialize heurisitc vlaues
         ref_cosine_dist = 0.0
+        ema_cosine_dist = 0.0
+        ema_decay = 0.9
+        prev_alpha = initial_alpha
+        integral_error = 0.0
+        prev_alpha = initial_alpha
         
 
         # -------------------------
@@ -293,15 +304,59 @@ class WanPTDiffusionPipeline(WanPipeline):
                 else:
                     base_alpha = 0.0
                 
-                if use_blending_heuristic and i > 0:  # skip step 0 (no valid metric yet)
+                if use_blending_heuristic_version_1 and i > 0:  # skip step 0 (no valid metric yet)
                     good_ref = GOOD_AVG_COSINE_DIST_LIST[i]
-                    if margin is None:
-                        margin = 2 * math.sqrt(max(good_ref, 0.0))
+                    margin = 2 * math.sqrt(max(good_ref, 0.0))
                     excess = ref_cosine_dist - (good_ref + margin)
                     damping = 1.0 / (1.0 + math.exp(steepness * excess)) #apply sigmoid damping based on how much the ref_cosine_dist exceeds the good_ref + margin
                     alpha = base_alpha * damping
+                elif use_blending_heuristic_version_2 and i > 0:
+                        good_ref = GOOD_AVG_COSINE_DIST_LIST[i]
+    
+                        # (1) Smooth
+                        ema_cosine_dist = ema_decay * ema_cosine_dist + (1 - ema_decay) * ref_cosine_dist
+                        
+                        # (2) Compute margin (dead zone) — recomputed every step, uses abs()
+                        margin_band = 2 * math.sqrt(max(abs(good_ref), 1e-4))
+                        
+                        # (3) Proportional response with dead zone
+                        error = ema_cosine_dist - good_ref
+                        if abs(error) <= margin_band:
+                            scale = 1.0  # inside dead zone, no correction
+                        else:
+                            sign = 1.0 if error > 0 else -1.0
+                            overshoot = abs(error) - margin_band
+                            gain = gain 
+                            scale = 1.0 - sign * gain * overshoot / max(abs(good_ref) + margin_band, 1e-6)
+                            scale = max(0.5, min(1.5, scale))  # clamp: alpha stays within 50%-150% of base
+                        
+                        alpha = base_alpha * scale
+                        
+                        # (4) Rate-limit alpha changes
+                        alpha = max(prev_alpha - max_alpha_delta, min(prev_alpha + max_alpha_delta, alpha))
+                        prev_alpha = alpha
+                elif use_blending_heuristic_version_3 and i > 0:
+                    target = GOOD_AVG_COSINE_DIST_LIST[i]
+                    current = ref_cosine_dist 
+
+                    error = current - target  
+                    norm = max(abs(target), 1e-4)
+                    normalized_error = error / norm
+
+                    integral_error += normalized_error
+                    max_integral_contribution = 0.5
+                    integral_clamp = max_integral_contribution / max(Ki, 1e-8)
+                    integral_error = max(-integral_clamp, min(integral_clamp, integral_error))  # anti-windup clamp
+
+                    correction = Kp * normalized_error + Ki * integral_error
+                    scale = max(0.0, min(1.5, 1.0 - correction))
+
+                    alpha = base_alpha * scale
+                    alpha = max(prev_alpha - max_alpha_delta, min(prev_alpha + max_alpha_delta, alpha))
+                    prev_alpha = alpha
                 else:
                     alpha = base_alpha
+                    prev_alpha = alpha
 
                 alpha = max(0.0, alpha)
                     

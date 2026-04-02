@@ -16,7 +16,7 @@ print("Importing libraries done...")
 from WanPTDiffusion.WanPTDPipeline import WanPTDiffusionPipeline
 print("Importing pipeline done...")
 
-use_same_seed = False
+use_same_seed = True
 if use_same_seed:
     #For reproducibility
     seed = 0
@@ -70,8 +70,6 @@ ref_latents_dir_list = ["./latents/precomputed_deterministic_inversion_latents_f
 
 # Heuristic grid search
 
-margin_list = [None, 0.002, 0.003, 0.004, 0.005]
-steepness_list = [100, 200, 300, 500, 700, 1000]
 direct_transfer_steps= 45
 decayed_transfer_steps = 22
 initial_alpha = 0.4
@@ -82,7 +80,7 @@ for pidx, prompt in enumerate(prompt_list):
     for idx, ref_dir in enumerate(ref_latents_dir_list):
         run_name = f"{asset_names_list[idx]}_prompt{pidx+1}"
         with wandb.init(
-            project="wan-heuristic-experiments-margin_None-steepness_100-v2",
+            project="wan-heuristic-experiments-4.2",
             name=run_name,
             config={
                 "description": "Testing heuristic with different prompts and reference latents",
@@ -93,8 +91,9 @@ for pidx, prompt in enumerate(prompt_list):
                 "direct_transfer_steps": direct_transfer_steps,
                 "decayed_transfer_steps": decayed_transfer_steps,
                 "initial_alpha": initial_alpha,
-                "margin": None,
-                "steepness": 100,
+                "Kp": 0.5,
+                "Ki": 0.2,
+                "max_alpha_delta": 0.05,
             }
         ) as run:
             video = pipe(
@@ -113,9 +112,12 @@ for pidx, prompt in enumerate(prompt_list):
                         exponent=0.5,
                         initial_alpha=initial_alpha,
                         ref_latents_dir=ref_dir,
-                        use_blending_heuristic=True,
-                        margin=None, #FIXED MARGIN Using a formula
-                        steepness=100, #FIXED STEEPNESS
+                        use_blending_heuristic_version_1=False,
+                        use_blending_heuristic_version_2=False,
+                        use_blending_heuristic_version_3=True,
+                        Kp=0.5,
+                        Ki=0.2,
+                        max_alpha_delta=0.05
                 )
 
 
@@ -124,6 +126,6 @@ for pidx, prompt in enumerate(prompt_list):
             frames = frames[0]  # Remove batch dimension -> [frames, height, width, channels]
             frame_list = [frames[i] for i in range(frames.shape[0])]
 
-            export_to_video(frame_list, f"/home/s2710099/outputs/deterministic/{run_name}.mp4")
+            export_to_video(frame_list, f"/home/s2710099/outputs/heuristic_v3/{run_name}.mp4")
     
 wandb.finish()

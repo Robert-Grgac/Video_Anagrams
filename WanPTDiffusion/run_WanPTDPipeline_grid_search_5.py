@@ -70,35 +70,38 @@ ref_latents_dir_list = ["./latents/precomputed_deterministic_inversion_latents_f
 
 # Heuristic grid search
 
-gain=[1.0, 2.0, 3.0]
+Kp_alpha_delta_list = [(2.0, 0.1), (2.0, 0.05), (1.0, 0.1), (1.0, 0.05), (0.5, 0.1), (0.5, 0.05)] #(Kp, max_alpha_delta)
+Ki_list = [0.01, 0.05, 0.1, 0.2]
 direct_transfer_steps= 45
 decayed_transfer_steps = 22
 initial_alpha = 0.4
 
 
 
-for pidx, prompt in enumerate(prompt_list):
-    for idx, ref_dir in enumerate(ref_latents_dir_list):
-        run_name = f"{asset_names_list[idx]}_prompt{pidx+1}"
+for Kp_delta in Kp_alpha_delta_list:
+    Kp, max_alpha_delta = Kp_delta
+    for Ki in Ki_list:
+        run_name = f"heuristic_v3_Kp_{Kp}_max_alpha_delta_{max_alpha_delta}_Ki_{Ki}"
         with wandb.init(
-            project="wan-heuristic-experiments-3",
+            project="wan-heuristic-experiments-4.1",
             name=run_name,
             config={
                 "description": "Testing heuristic with different prompts and reference latents",
-                "asset_name": asset_names_list[idx],
-                "prompt_idx": pidx+1,
-                "prompt": prompt,
-                "ref_latents_dir": ref_dir,
+                "asset_name": "face1",
+                "prompt_idx": 1,
+                "prompt": prompt1,
+                "ref_latents_dir": "./latents/precomputed_deterministic_inversion_latents_face1",
                 "direct_transfer_steps": direct_transfer_steps,
                 "decayed_transfer_steps": decayed_transfer_steps,
                 "initial_alpha": initial_alpha,
-                "margin": None,
-                "steepness": 100,
+                "Kp": Kp,
+                "Ki": Ki,
+                "max_alpha_delta": max_alpha_delta,
             }
         ) as run:
             video = pipe(
                     # Standard params
-                        prompt=prompt,
+                        prompt=prompt1,
                         negative_prompt=negative_prompt,
                         height=height,
                         width=width,
@@ -111,11 +114,13 @@ for pidx, prompt in enumerate(prompt_list):
                         decayed_transfer_steps=decayed_transfer_steps,
                         exponent=0.5,
                         initial_alpha=initial_alpha,
-                        ref_latents_dir=ref_dir,
+                        ref_latents_dir="./latents/precomputed_deterministic_inversion_latents_face1",
                         use_blending_heuristic_version_1=False,
-                        use_blending_heuristic_version_2=True,
-                        steepness=100, #FIXED STEEPNESS
-                        gain=2.0, #FIXED GAIN
+                        use_blending_heuristic_version_2=False,
+                        use_blending_heuristic_version_3=True,
+                        Kp=Kp,
+                        Ki=Ki,
+                        max_alpha_delta=max_alpha_delta
                 )
 
 
@@ -124,6 +129,6 @@ for pidx, prompt in enumerate(prompt_list):
             frames = frames[0]  # Remove batch dimension -> [frames, height, width, channels]
             frame_list = [frames[i] for i in range(frames.shape[0])]
 
-            export_to_video(frame_list, f"/home/s2710099/outputs/heuristic_v2/{run_name}.mp4")
+            export_to_video(frame_list, f"/home/s2710099/outputs/heuristic_v3/{run_name}.mp4")
     
 wandb.finish()

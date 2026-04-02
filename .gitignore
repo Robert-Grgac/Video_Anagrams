@@ -25,6 +25,8 @@ sandbox.py
 #Files
 *.pt
 *.png
+*.jpg
+*.jpeg
 
 #Folders
 wandb/

@@ -16,7 +16,7 @@ print("Importing libraries done...")
 from WanPTDiffusion.WanPTDPipeline import WanPTDiffusionPipeline
 print("Importing pipeline done...")
 
-use_same_seed = False
+use_same_seed = True
 if use_same_seed:
     #For reproducibility
     seed = 0
@@ -70,63 +70,65 @@ ref_latents_dir_list = ["./latents/precomputed_deterministic_inversion_latents_f
 
 # Heuristic grid search
 
-ref_cos_threshold_list = [0.05, 0.06]
-ref_factor_list = [0.01, 0.05, 0.1]
-cond_mag_threshold_list = [400, 500]
-cond_factor_list = [0.01, 0.05, 0.1]
+Kp_list = [0.1, 0.25, 0.5, 1.0, 2.0] #proportional gain
+Ki = 0.0 #integral gain next try to sweep based on the best Kp [0.01, 0.05, 0.1, 0.2] dont forge tot adjust the clamp as well
+max_alpha_delta_list = [0.02, 0.05, 0.1]
 direct_transfer_steps= 45
 decayed_transfer_steps = 22
-alpha = 0.4
+initial_alpha = 0.4
 
 
 
-for idx, ref_cos_threshold in enumerate(ref_cos_threshold_list):
-    for pidx, ref_factor in enumerate(ref_factor_list):
-        for cidx, cond_mag_threshold in enumerate(cond_mag_threshold_list):
-            for cfidx, cond_factor in enumerate(cond_factor_list):
-        
-                run_name = f"face1_ref_cos_threshold_{ref_cos_threshold}_ref_factor_{ref_factor}_cond_mag_threshold_{cond_mag_threshold}_cond_factor_{cond_factor}"
-                with wandb.init(
-                    project="wan-heuristic-experiments-1",
-                    name=run_name,
-                    config={
-                        "asset_name": "face1",
-                        "prompt_idx": 2,
-                        "prompt": prompt2,
-                        "ref_latents_dir": "./latents/precomputed_deterministic_inversion_latents_face1",
-                        "direct_transfer_steps": 0,
-                        "decayed_transfer_steps": 0,
-                        "initial_alpha": alpha,
-                    }
-                ) as run:
-                    video = pipe(
-                            # Standard params
-                                prompt=prompt2, #FIXED PROMPT
-                                negative_prompt=negative_prompt,
-                                height=height,
-                                width=width,
-                                num_frames=num_frames,
-                                num_inference_steps=num_inference_steps,
-                                latents=loaded_latents.clone() if use_same_seed else None,
-                                guidance_scale=0.0, #NO CLASSIFIER FREE GUIDANCE FOR HEURISTIC GRID SEARCH
-                            #PTM params
-                                direct_transfer_steps=0, #NOT USED NOW
-                                decayed_transfer_steps=0, #NOT USED NOW
-                                exponent=0.5,
-                                initial_alpha=alpha,
-                                ref_latents_dir="./latents/precomputed_deterministic_inversion_latents_face1",
-                                ref_threshold = ref_cos_threshold,
-                                ref_factor = ref_factor,
-                                cond_threshold = cond_mag_threshold,
-                                cond_factor = cond_factor,
-                        )
+for Kp in Kp_list:
+    for max_alpha_delta in max_alpha_delta_list:
+        run_name = f"heuristic_v3_Kp_{Kp}_max_alpha_delta_{max_alpha_delta}"
+        with wandb.init(
+            project="wan-heuristic-experiments-4",
+            name=run_name,
+            config={
+                "description": "Testing heuristic with different prompts and reference latents",
+                "asset_name": "face1",
+                "prompt_idx": 1,
+                "prompt": prompt1,
+                "ref_latents_dir": "./latents/precomputed_deterministic_inversion_latents_face1",
+                "direct_transfer_steps": direct_transfer_steps,
+                "decayed_transfer_steps": decayed_transfer_steps,
+                "initial_alpha": initial_alpha,
+                "Kp": Kp,
+                "Ki": Ki,
+                "max_alpha_delta": max_alpha_delta,
+            }
+        ) as run:
+            video = pipe(
+                    # Standard params
+                        prompt=prompt1,
+                        negative_prompt=negative_prompt,
+                        height=height,
+                        width=width,
+                        num_frames=num_frames,
+                        num_inference_steps=num_inference_steps,
+                        latents=loaded_latents.clone() if use_same_seed else None,
+                        guidance_scale=0.0, #NO CLASSIFIER FREE GUIDANCE FOR HEURISTIC GRID SEARCH
+                    #PTM params
+                        direct_transfer_steps=direct_transfer_steps,
+                        decayed_transfer_steps=decayed_transfer_steps,
+                        exponent=0.5,
+                        initial_alpha=initial_alpha,
+                        ref_latents_dir="./latents/precomputed_deterministic_inversion_latents_face1",
+                        use_blending_heuristic_version_1=False,
+                        use_blending_heuristic_version_2=False,
+                        use_blending_heuristic_version_3=True,
+                        Kp=Kp,
+                        Ki=Ki,
+                        max_alpha_delta=max_alpha_delta
+                )
 
 
-                    frames = video.get('frames', video.get('images', video))
+            frames = video.get('frames', video.get('images', video))
 
-                    frames = frames[0]  # Remove batch dimension -> [frames, height, width, channels]
-                    frame_list = [frames[i] for i in range(frames.shape[0])]
+            frames = frames[0]  # Remove batch dimension -> [frames, height, width, channels]
+            frame_list = [frames[i] for i in range(frames.shape[0])]
 
-                    export_to_video(frame_list, f"/home/s2710099/outputs/deterministic/{run_name}.mp4")
+            export_to_video(frame_list, f"/home/s2710099/outputs/heuristic_v3/{run_name}.mp4")
     
 wandb.finish()
