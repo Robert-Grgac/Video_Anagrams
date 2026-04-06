@@ -2,10 +2,13 @@ from fileinput import filename
 import os
 from typing import List, Optional, Union
 import glob
+import warnings
 
 import torch
 import PIL.Image
 from tqdm import tqdm
+from torchvision.io import read_video
+import torch.nn.functional as F
 
 from diffusers import WanPipeline
 from diffusers.video_processor import VideoProcessor
@@ -49,6 +52,69 @@ class WanInversionPipeline(WanPipeline):
 
         # Build static video: [B, 3, T, H, W]
         video = img.unsqueeze(2).repeat(1, 1, num_frames, 1, 1)
+
+        # Encode with VAE
+        video = video.to(device=device, dtype=self.vae.dtype)
+        posterior = self.vae.encode(video).latent_dist
+        latents = posterior.mode()  # deterministic (mean)
+
+        # Normalize to match diffusion latent normalization
+        latents_mean = (
+            torch.tensor(self.vae.config.latents_mean, device=device, dtype=latents.dtype)
+            .view(1, self.vae.config.z_dim, 1, 1, 1)
+        )
+        latents_std = (
+            torch.tensor(self.vae.config.latents_std, device=device, dtype=latents.dtype)
+            .view(1, self.vae.config.z_dim, 1, 1, 1)
+        )
+        latents = (latents - latents_mean) / latents_std
+
+        return latents.to(dtype=dtype)
+
+    def _encode_reference_video_to_latents(
+        self,
+        reference_video: str,
+        *,
+        height: int,
+        width: int,
+        num_frames: int,
+        device: torch.device,
+        dtype: torch.dtype,
+    ) -> torch.Tensor:
+        """
+        Encode a reference video file into Wan VAE latent space.
+
+        Loads frames from the video, resizes them to (height, width),
+        selects/pads to exactly `num_frames`, and encodes through the VAE.
+
+        Returns normalized latents with shape [1, z_dim, T_lat, H_lat, W_lat].
+        """
+        # Load video frames: read_video returns (T, H, W, C) uint8
+        frames_tensor, _, _ = read_video(reference_video, pts_unit="sec")
+        # Convert to float [0, 1] and rearrange to (T, C, H, W)
+        frames_tensor = frames_tensor.float() / 255.0
+        frames_tensor = frames_tensor.permute(0, 3, 1, 2)  # (T, C, H, W)
+
+        # Resize each frame to target (height, width)
+        frames_tensor = F.interpolate(
+            frames_tensor, size=(height, width), mode="bilinear", align_corners=False
+        )  # (T, C, H, W)
+
+        # Adjust number of frames: truncate or repeat-pad to num_frames
+        T = frames_tensor.shape[0]
+        if T >= num_frames:
+            frames_tensor = frames_tensor[:num_frames]
+        else:
+            # Repeat last frame to pad
+            pad = frames_tensor[-1:].repeat(num_frames - T, 1, 1, 1)
+            frames_tensor = torch.cat([frames_tensor, pad], dim=0)
+            warnings.warn("Frame count adjusted to match VAE requirements.")
+
+        # Normalize to [-1, 1] as expected by the VAE
+        frames_tensor = frames_tensor * 2.0 - 1.0
+
+        # Build video tensor: [B, C, T, H, W]
+        video = frames_tensor.permute(1, 0, 2, 3).unsqueeze(0)  # (1, C, T, H, W)
 
         # Encode with VAE
         video = video.to(device=device, dtype=self.vae.dtype)
@@ -313,6 +379,106 @@ class WanInversionPipeline(WanPipeline):
             latent_path = os.path.join(save_latent_dir, f"{step_name}.pt")
             torch.save(z_t.to(save_dtype).cpu(), latent_path)
             
+            if save_images:
+                # Decode latent
+                z_decode = z_t.to(device=device, dtype=self.vae.dtype)
+                mean = latents_mean.to(dtype=z_decode.dtype)
+                std_inv = latents_std_inv.to(dtype=z_decode.dtype)
+                z_decode = z_decode / std_inv + mean
+
+                video = self.vae.decode(z_decode, return_dict=False)[0]
+                frames = self.video_processor.postprocess_video(video, output_type="pil")
+
+                if isinstance(frames[0], list):
+                    frame_img = frames[0][frame_index]
+                else:
+                    frame_img = frames[frame_index]
+
+                image_path = os.path.join(save_image_dir, f"{step_name}.png")
+                frame_img.save(image_path)
+
+    @torch.no_grad()
+    def deterministic_invert_video(
+        self,
+        reference_video: str = "./assets/Man_shaking_head.mp4",
+        height: int = 528,
+        width: int = 528,
+        num_frames: int = 61,
+        num_inference_steps: int = 50,
+        save_latent_dir: str = "./latents/precomputed_deterministic_video_head1",
+        save_image_dir: str = "./deterministic_video_inversion_images",
+        save_dtype: torch.dtype = torch.float32,
+        frame_index: int = 0,
+        save_images: bool = False,
+    ):
+        """
+        Deterministic inversion for a reference video (instead of a single image).
+
+        Loads the video from `reference_video`, encodes it through the VAE,
+        then computes z_t = t * z_hat_0 + (1 - t) * eps for each sigma step
+        and saves the latent trajectory.
+        """
+
+        os.makedirs(save_latent_dir, exist_ok=True)
+        os.makedirs(save_image_dir, exist_ok=True)
+
+        device = self._execution_device
+
+        if num_frames % self.vae_scale_factor_temporal != 1:
+            num_frames = (
+                num_frames // self.vae_scale_factor_temporal
+                * self.vae_scale_factor_temporal + 1
+            )
+        num_frames = max(num_frames, 1)
+
+        z_hat_0 = self._encode_reference_video_to_latents(
+            reference_video,
+            height=height,
+            width=width,
+            num_frames=num_frames,
+            device=device,
+            dtype=torch.float32,
+        )
+
+        eps = torch.randn(
+            z_hat_0.shape,
+            device=device,
+            dtype=torch.float32,
+        )
+
+        self.scheduler.set_timesteps(num_inference_steps, device=device)
+        inv_sigmas = torch.flip(self.scheduler.sigmas, dims=[0]).to(
+            device=device, dtype=torch.float32
+        )
+
+        print(
+            f"Running deterministic video inversion with {len(inv_sigmas)} sigma values "
+            f"(0 → 1)"
+        )
+        print(
+            f"Sigma range: {inv_sigmas[0].item():.6f} → "
+            f"{inv_sigmas[-1].item():.6f}"
+        )
+
+        if save_images:
+            latents_mean = (
+                torch.tensor(self.vae.config.latents_mean, device=device)
+                .view(1, self.vae.config.z_dim, 1, 1, 1)
+            )
+            latents_std_inv = (
+                1.0
+                / torch.tensor(self.vae.config.latents_std, device=device)
+                .view(1, self.vae.config.z_dim, 1, 1, 1)
+            )
+
+        for i, t in enumerate(tqdm(inv_sigmas, desc="Deterministic Video Inversion")):
+            z_t = t * z_hat_0 + (1.0 - t) * eps
+
+            # Save latent
+            step_name = f"step_{i:04d}"
+            latent_path = os.path.join(save_latent_dir, f"{step_name}.pt")
+            torch.save(z_t.to(save_dtype).cpu(), latent_path)
+
             if save_images:
                 # Decode latent
                 z_decode = z_t.to(device=device, dtype=self.vae.dtype)

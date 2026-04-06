@@ -26,15 +26,16 @@ class WanPTDiffusionPipeline(WanPipeline):
     
     @staticmethod
     def _phase_substitute(x_dec: torch.Tensor, ref_latent: torch.Tensor, alpha: float, step: int, conditional_latent: torch.Tensor) -> torch.Tensor:
-        ref_latent_fft = torch.fft.fft2(ref_latent)
+        dims = (-3, -2, -1)  # (T_lat, H_lat, W_lat)
+        ref_latent_fft = torch.fft.fftn(ref_latent, dim=dims)
         ref_latent_angle = torch.angle(ref_latent_fft)
         
-        x_dec_fft = torch.fft.fft2(x_dec)
+        x_dec_fft = torch.fft.fftn(x_dec, dim=dims)
         x_dec_mag = torch.abs(x_dec_fft)
         x_dec_angle = torch.angle(x_dec_fft)
         mixed_angle = ref_latent_angle * alpha + (1 - alpha) * x_dec_angle
         
-        conditional_latent_fft = torch.fft.fft2(conditional_latent)
+        conditional_latent_fft = torch.fft.fftn(conditional_latent, dim=dims)
         conditional_latent_mag = torch.abs(conditional_latent_fft)
         
         #Log the cosine distance between the reference and the x_dec angle
@@ -45,7 +46,7 @@ class WanPTDiffusionPipeline(WanPipeline):
         x_dec_fft = x_dec_mag * torch.cos(mixed_angle) + \
                     x_dec_mag * torch.sin(mixed_angle) * torch.complex(torch.zeros_like(x_dec_mag),
                                                                        torch.ones_like(x_dec_mag))
-        x_dec = torch.fft.ifft2(x_dec_fft).real
+        x_dec = torch.fft.ifftn(x_dec_fft, dim=dims).real
         
         return x_dec, ref_cosine_dist.item()
     
