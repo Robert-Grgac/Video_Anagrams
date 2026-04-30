@@ -63,7 +63,7 @@ num_inference_steps = 101
 guidance_scale = 7.0
 #Gridearch parameters
 asset_names_list = ["face1", "face2", "dog", "cat", "skull"]
-prompt_list = [prompt1, prompt2, prompt3, prompt4, prompt5, prompt6, prompt7]
+prompt_list = [prompt2]
 inital_alpha_list = [ 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
 transfer_steps_list= [(5,2), (10,5),(15,7), (20,10), (25,12), (30,15), (45,22)]
 ref_latents_dir_list = ["./latents/precomputed_deterministic_inversion_latents_face1", "./latents/precomputed_deterministic_inversion_latents_face2", "./latents/precomputed_deterministic_inversion_latents_dog", "./latents/precomputed_deterministic_inversion_latents_cat", "./latents/precomputed_deterministic_inversion_latents_skull"]
@@ -73,17 +73,17 @@ ref_latents_dir_list = ["./latents/precomputed_deterministic_inversion_latents_f
 direct_transfer_steps= 45
 decayed_transfer_steps = 22
 initial_alpha = 0.4
-
+energy_target_ratios_list = [0.9, 0.95, 0.97, 0.99]
 
 
 for pidx, prompt in enumerate(prompt_list):
     for idx, ref_dir in enumerate(ref_latents_dir_list):
-        run_name = f"{asset_names_list[idx]}_prompt{pidx+1}"
+        run_name = f"{asset_names_list[idx]}_prompt{2}"
         with wandb.init(
-            project="wan-heuristic-experiments-4.2",
+            project="wan-search-for-best-measurement",
             name=run_name,
             config={
-                "description": "Testing heuristic with different prompts and reference latents",
+                "description": "Looking for the best measurement for the PI controller in WanPTD.",
                 "asset_name": asset_names_list[idx],
                 "prompt_idx": pidx+1,
                 "prompt": prompt,
@@ -114,10 +114,11 @@ for pidx, prompt in enumerate(prompt_list):
                         ref_latents_dir=ref_dir,
                         use_blending_heuristic_version_1=False,
                         use_blending_heuristic_version_2=False,
-                        use_blending_heuristic_version_3=True,
+                        use_blending_heuristic_version_3=False,
+                        use_blending_heuristic_version_4=False,
                         Kp=0.5,
                         Ki=0.2,
-                        max_alpha_delta=0.05
+                        max_alpha_delta=0.05,
                 )
 
 
@@ -126,6 +127,6 @@ for pidx, prompt in enumerate(prompt_list):
             frames = frames[0]  # Remove batch dimension -> [frames, height, width, channels]
             frame_list = [frames[i] for i in range(frames.shape[0])]
 
-            export_to_video(frame_list, f"/home/s2710099/outputs/heuristic_v3/{run_name}.mp4")
+            export_to_video(frame_list, f"/home/s2710099/outputs/heuristic_v4/{run_name}.mp4")
     
 wandb.finish()

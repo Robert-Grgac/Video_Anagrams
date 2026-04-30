@@ -4,6 +4,9 @@ import torch
 import glob
 import os
 import math
+import torch.nn.functional as F
+import numpy as np
+from skimage.feature import hog
 
 from diffusers import WanPipeline
 from diffusers.pipelines.wan.pipeline_output import WanPipelineOutput
@@ -13,6 +16,51 @@ from utils.constants import GOOD_AVG_COSINE_DIST_LIST
 
 class WanPTDiffusionPipeline(WanPipeline):
     
+    @staticmethod
+    def _compute_hog_features(frames: torch.Tensor, orientations=9, pixels_per_cell=(8, 8), cells_per_block=(2, 2)):
+        video = frames[0].cpu().float()
+        C, T, H, W = video.shape
+        
+        all_hog_features = []
+        for t_idx in range(T):
+            frame = video[:, t_idx, :, :]  # (C, H, W)
+            if C == 3:
+                gray = 0.2989 * frame[0] + 0.5870 * frame[1] + 0.1140 * frame[2]
+            else:
+                gray = frame[0]
+            
+            gray_np = gray.numpy()
+            
+            hog_feat = hog(
+                gray_np,
+                orientations=orientations,
+                pixels_per_cell=pixels_per_cell,
+                cells_per_block=cells_per_block,
+                feature_vector=True,
+            )
+            all_hog_features.append(torch.from_numpy(hog_feat))
+        
+        # Concatenate all frames' HOG features into one vector
+        return torch.cat(all_hog_features, dim=0)
+    
+    def _decode_latents_to_pixel(self, latents: torch.Tensor) -> torch.Tensor:
+        latents = latents.to(self.vae.dtype)
+        latents_mean = (
+            torch.tensor(self.vae.config.latents_mean)
+            .view(1, self.vae.config.z_dim, 1, 1, 1)
+            .to(latents.device, latents.dtype)
+        )
+        latents_std_inv = (
+            1.0 / torch.tensor(self.vae.config.latents_std)
+            .view(1, self.vae.config.z_dim, 1, 1, 1)
+            .to(latents.device, latents.dtype)
+        )
+        latents = latents / latents_std_inv + latents_mean
+        video = self.vae.decode(latents, return_dict=False)[0]
+        # Clamp to [0, 1]
+        video = video.clamp(0, 1)
+        return video
+        
     def _load_reference_latents(
         self,
         latents_dir: str,
@@ -37,17 +85,30 @@ class WanPTDiffusionPipeline(WanPipeline):
         conditional_latent_fft = torch.fft.fft2(conditional_latent)
         conditional_latent_mag = torch.abs(conditional_latent_fft)
         
-        #Log the cosine distance between the reference and the x_dec angle
-        ref_cosine_dist = torch.cos(ref_latent_angle - x_dec_angle).mean() 
-        mse_mag = torch.nn.functional.mse_loss(conditional_latent_mag, x_dec_mag)
-        wandb.log({"ref_cosine_dist_mean": ref_cosine_dist.item(), "cond_mse_mag": mse_mag.item(), "alpha": alpha}, step=step)
+        energy_before = (x_dec ** 2).sum()
         
+        #Reconstuction
         x_dec_fft = x_dec_mag * torch.cos(mixed_angle) + \
                     x_dec_mag * torch.sin(mixed_angle) * torch.complex(torch.zeros_like(x_dec_mag),
                                                                        torch.ones_like(x_dec_mag))
         x_dec = torch.fft.ifft2(x_dec_fft).real
         
-        return x_dec, ref_cosine_dist.item()
+        energy_after = (x_dec ** 2).sum()
+        energy_ratio = (energy_after / (energy_before + 1e-10)).item()
+        
+        #Log the cosine distance between the reference and the x_dec angle
+        ref_cosine_dist = torch.cos(ref_latent_angle - x_dec_angle).mean() 
+        mse_mag = torch.nn.functional.mse_loss(conditional_latent_mag, x_dec_mag)
+        wandb.log({
+        "ref_cosine_dist_mean": ref_cosine_dist.item(), 
+        "cond_mse_mag": mse_mag.item(), 
+        "alpha": alpha,
+        "energy_ratio": energy_ratio,
+        "energy_before": energy_before.item(),
+        "energy_after": energy_after.item(),
+        }, step=step)
+        
+        return x_dec, ref_cosine_dist.item(), energy_ratio
     
     @torch.no_grad()
     def __call__(
@@ -84,12 +145,16 @@ class WanPTDiffusionPipeline(WanPipeline):
         use_blending_heuristic_version_1: bool = False,
         use_blending_heuristic_version_2: bool = False,
         use_blending_heuristic_version_3: bool = False,
+        use_blending_heuristic_version_4: bool = False,
         ref_latents_dir: Optional[str] = "./precomputed_deterministic_inversion_latents",
         steepness: float = None,
         gain: float = 2.0,
         Kp: float = None,
         Ki: float = None,
-        max_alpha_delta: float = None
+        max_alpha_delta: float = None,
+        energy_target: float = 0.95,
+        Kp_energy: float = 2.0,
+        Ki_energy: float = 0.1
         
     ):
 
@@ -209,6 +274,8 @@ class WanPTDiffusionPipeline(WanPipeline):
         prev_alpha = initial_alpha
         integral_error = 0.0
         prev_alpha = initial_alpha
+        energy_ratio = 1.0          
+        integral_error_energy = 0.0
         
 
         # -------------------------
@@ -257,6 +324,8 @@ class WanPTDiffusionPipeline(WanPipeline):
                         return_dict=False,
                     )[0]
                 noise_pred, cond_noise_pred = batched_noise_pred.chunk(2, dim=0)
+                
+                cosine_similarity_of_noise = F.cosine_similarity(noise_pred.flatten(), cond_noise_pred.flatten(), dim=0).item()
                 
                 # CFG
                 if self.do_classifier_free_guidance:
@@ -354,13 +423,73 @@ class WanPTDiffusionPipeline(WanPipeline):
                     alpha = base_alpha * scale
                     alpha = max(prev_alpha - max_alpha_delta, min(prev_alpha + max_alpha_delta, alpha))
                     prev_alpha = alpha
+                
+                elif use_blending_heuristic_version_4 and i > 0:
+                    # PI controller based on spectral energy ratio
+                    target = energy_target
+                    current = energy_ratio
+                    
+                    # Error: negative means energy was lost (alpha too high)
+                    error = target - current 
+                    
+                    normalized_error = error
+                    
+                    integral_error_energy += normalized_error
+                    max_integral_contribution = 0.3
+                    integral_clamp = max_integral_contribution / max(Ki_energy, 1e-8)
+                    integral_error_energy = max(-integral_clamp, min(integral_clamp, integral_error_energy))
+                    
+                    correction = Kp_energy * normalized_error + Ki_energy * integral_error_energy
+                    
+                    scale = max(0.0, min(1.5, 1.0 + correction))
+                    
+                    alpha = base_alpha * scale
+                    alpha = max(prev_alpha - max_alpha_delta, min(prev_alpha + max_alpha_delta, alpha))
+                    prev_alpha = alpha
                 else:
                     alpha = base_alpha
                     prev_alpha = alpha
 
                 alpha = max(0.0, alpha)
                     
-                latents, ref_cosine_dist = self._phase_substitute(x_dec=latents, ref_latent=ref_latent, alpha=alpha, step=i, conditional_latent=conditional_latent)
+                latents, ref_cosine_dist, energy_ratio  = self._phase_substitute(x_dec=latents, ref_latent=ref_latent, alpha=alpha, step=i, conditional_latent=conditional_latent)
+                
+                #testing different measuments to use as a referen for PI contorller
+                mse_on_latents = F.mse_loss(latents, conditional_latent).item()
+                latent_cos_sim = F.cosine_similarity(latents.flatten(), conditional_latent.flatten(), dim=0).item()
+                normalized_mse_on_latents = F.mse_loss(latents, conditional_latent) / (conditional_latent ** 2).mean()
+
+                # Select 3 frames: first, middle, last from the LATENT temporal dimension
+                T_latent = latents.shape[2]  # temporal dim of latent tensor
+                frame_indices = [0, T_latent // 2, T_latent - 1]
+
+                # Slice latents at those temporal positions → (B, C, 3, H_lat, W_lat)
+                blended_latent_frames = latents[:, :, frame_indices, :, :]
+                ref_latent_frames = ref_latent[:, :, frame_indices, :, :]
+
+                # Decode only the 3 selected frames (much cheaper than full video BUT COULD MESS WITH THE DECODED VALUES SINCE VAE HAS TEMPORAL CONTEXT)
+                blended_pixels = self._decode_latents_to_pixel(blended_latent_frames)
+                ref_pixels = self._decode_latents_to_pixel(ref_latent_frames)
+                
+                # Compute HOG features
+                hog_blended = self._compute_hog_features(blended_pixels)
+                hog_ref = self._compute_hog_features(ref_pixels)
+                
+                # Cosine similarity between HOG descriptors
+                hog_cos_sim = F.cosine_similarity(
+                    hog_blended.unsqueeze(0), 
+                    hog_ref.unsqueeze(0), 
+                    dim=1
+                ).item()
+                
+                
+                wandb.log({
+                    "mse_on_latents": mse_on_latents,
+                    "latent_cos_sim": latent_cos_sim,
+                    "normalized_mse_on_latents": normalized_mse_on_latents.item(),
+                    "cosine_similarity_of_noise": cosine_similarity_of_noise,
+                    "hog_cosine_similarity": hog_cos_sim,
+                }, step=i)
                 
                 # callback
                 if callback_on_step_end is not None:
