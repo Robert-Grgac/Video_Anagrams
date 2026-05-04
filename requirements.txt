@@ -1,0 +1,31 @@
+# ----------------------------------------------------------------------------
+# Torch stack — installed from the PyTorch cu124 index. Do NOT upgrade with
+# `pip install -U torch ...`; that will replace the +cu124 build with a default
+# CUDA wheel and silently break the env.
+#
+# To reinstall on a fresh node:
+#   pip install torch==2.4.1+cu124 torchvision==0.19.1+cu124 \
+#               torchaudio==2.4.1+cu124 \
+#               --index-url https://download.pytorch.org/whl/cu124
+# ----------------------------------------------------------------------------
+torch==2.4.1+cu124
+torchvision==0.19.1+cu124
+torchaudio==2.4.1+cu124
+
+# ----------------------------------------------------------------------------
+# flash-attn — built against the torch above. To actually engage it through
+# diffusers at runtime, export DIFFUSERS_ATTN_BACKEND="flash" in your sbatch
+# script (see slurm/*.sbatch).
+# ----------------------------------------------------------------------------
+flash-attn==2.8.3
+
+# Core inference / model stack
+diffusers==0.36.0
+transformers==4.57.6
+peft==0.18.1
+
+# Numerics & I/O
+numpy==1.26.4
+opencv-python==4.11.0.86
+Pillow==12.0.0
+imageio-ffmpeg==0.6.0
