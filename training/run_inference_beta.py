@@ -55,6 +55,10 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--num_inference_steps", type=int, default=100)
     p.add_argument("--guidance_scale", type=float, default=5.0)
     p.add_argument("--controlnet_weight", type=float, default=1.0)
+    p.add_argument("--weights", type=str, default=None,
+                   help="Optional comma-separated list of controlnet_weight values. "
+                        "If set, builds the pipeline once and writes one mp4 per weight; "
+                        "output filenames get a '_w{weight}' suffix. Overrides --controlnet_weight.")
     p.add_argument("--controlnet_stride", type=int, default=3)
     # ControlNet was trained only against the high-noise expert (sigma >= 0.875).
     # Limit injection to that regime: with FlowMatch's roughly-linear sigma
@@ -62,6 +66,11 @@ def parse_args() -> argparse.Namespace:
     # exactly the steps where the high-noise expert is active.
     p.add_argument("--controlnet_guidance_start", type=float, default=0.0)
     p.add_argument("--controlnet_guidance_end", type=float, default=0.125)
+    p.add_argument("--ends", type=str, default=None,
+                   help="Optional comma-separated list of controlnet_guidance_end values. "
+                        "Combined with --weights as a Cartesian product. "
+                        "When set, output filenames get a '_w{weight}_e{end}' suffix. "
+                        "Overrides --controlnet_guidance_end.")
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--fps", type=int, default=8)
     return p.parse_args()
@@ -190,26 +199,58 @@ def main() -> int:
 
     pipe = build_pipeline(args)
 
-    generator = torch.Generator().manual_seed(args.seed)
-    out = pipe(
-        controlnet_frames=[canny_img] * args.num_frames,
-        prompt=prompt_text,
-        negative_prompt=args.negative_prompt,
-        height=args.height,
-        width=args.width,
-        num_frames=args.num_frames,
-        num_inference_steps=args.num_inference_steps,
-        guidance_scale=args.guidance_scale,
-        controlnet_weight=args.controlnet_weight,
-        controlnet_stride=args.controlnet_stride,
-        controlnet_guidance_start=args.controlnet_guidance_start,
-        controlnet_guidance_end=args.controlnet_guidance_end,
-        generator=generator,
-        output_type="np",
-    )
-    frames = out.frames[0]  # (T, H, W, 3) float in [0, 1]
-    save_video(frames, Path(args.output_path), fps=args.fps)
-    print(f"[done] wrote {args.output_path}")
+    if args.weights:
+        weights = [float(w) for w in args.weights.split(",") if w.strip()]
+    else:
+        weights = [args.controlnet_weight]
+    if args.ends:
+        ends = [float(e) for e in args.ends.split(",") if e.strip()]
+    else:
+        ends = [args.controlnet_guidance_end]
+    sweep_active = bool(args.weights) or bool(args.ends)
+    print(f"[sweep] {len(weights)} weight(s) x {len(ends)} end(s) = "
+          f"{len(weights) * len(ends)} videos")
+
+    out_path = Path(args.output_path)
+    from accelerate.hooks import remove_hook_from_module
+    for w in weights:
+        for e in ends:
+            # Diffusers' model_cpu_offload re-attaches an accelerate hook to the
+            # controlnet at the start of each __call__; its pre_forward then
+            # routes inputs to CPU and we get a CPU/GPU mismatch on the first
+            # Conv3D. Strip the hook and pin the controlnet to GPU before every
+            # iteration of the sweep.
+            remove_hook_from_module(pipe.controlnet, recurse=True)
+            pipe.controlnet.to("cuda")
+            # Reseed so the only varying factors across videos are (weight, end).
+            generator = torch.Generator().manual_seed(args.seed)
+            out = pipe(
+                controlnet_frames=[canny_img] * args.num_frames,
+                prompt=prompt_text,
+                negative_prompt=args.negative_prompt,
+                height=args.height,
+                width=args.width,
+                num_frames=args.num_frames,
+                num_inference_steps=args.num_inference_steps,
+                guidance_scale=args.guidance_scale,
+                controlnet_weight=w,
+                controlnet_stride=args.controlnet_stride,
+                controlnet_guidance_start=args.controlnet_guidance_start,
+                controlnet_guidance_end=e,
+                generator=generator,
+                output_type="np",
+            )
+            frames = out.frames[0]  # (T, H, W, 3) float in [0, 1]
+            if not sweep_active:
+                target = out_path
+            else:
+                wstr = f"{w:.2f}".replace(".", "p")
+                estr = f"{e:.3f}".rstrip("0").rstrip(".").replace(".", "p")
+                target = out_path.with_name(
+                    f"{out_path.stem}_w{wstr}_e{estr}{out_path.suffix}"
+                )
+            save_video(frames, target, fps=args.fps)
+            print(f"[done] wrote {target}  (w={w}, end={e})")
     return 0
 
 

@@ -4,7 +4,7 @@
 #SBATCH --nodelist=ctit092
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1
-#SBATCH --time=01:00:00
+#SBATCH --time=02:00:00
 #SBATCH --mem=64G
 #SBATCH --output=/home/s2710099/logs/wan-beta-infer-%j.out
 #SBATCH --error=/home/s2710099/logs/wan-beta-infer-%j.err
@@ -51,8 +51,13 @@ export OUTPUT=${OUTPUT:-$WAN_BETA_OUT/beta-001_infer.mp4}
 export STEPS=${STEPS:-100}
 export GUIDANCE=${GUIDANCE:-5.0}
 export CN_WEIGHT=${CN_WEIGHT:-1.0}
+export WEIGHTS=${WEIGHTS:-}                          # comma-sep sweep, e.g. "1.0,1.5,2.5,4.0"
 export CN_START=${CN_START:-0.0}                     # ControlNet only on high-noise expert
 export CN_END=${CN_END:-0.125}                       # = 1 - boundary_ratio (0.875)
+export ENDS=${ENDS:-}                                # comma-sep sweep over controlnet_guidance_end,
+                                                     # e.g. "0.125,0.5,0.875,1.0".
+                                                     # Combined with WEIGHTS as Cartesian product;
+                                                     # one mp4 per (weight, end) pair.
 export SEED=${SEED:-42}
 
 mkdir -p "$(dirname "$OUTPUT")"
@@ -73,6 +78,12 @@ CMD=(python -m training.run_inference_beta
 )
 if [ -n "$SLUG" ]; then
     CMD+=(--slug "$SLUG")
+fi
+if [ -n "$WEIGHTS" ]; then
+    CMD+=(--weights "$WEIGHTS")
+fi
+if [ -n "$ENDS" ]; then
+    CMD+=(--ends "$ENDS")
 fi
 
 "${CMD[@]}"

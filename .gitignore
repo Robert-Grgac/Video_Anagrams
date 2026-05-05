@@ -232,5 +232,5 @@ training_cards/*_smoke_results.json
 
 #Misc
 .vscode/
-.docs/
+/docs
 CLAUDE.md
