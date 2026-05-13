@@ -51,6 +51,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--canny_low", type=int, default=100)
     p.add_argument("--canny_high", type=int, default=200)
     p.add_argument("--negative_prompt", type=str, default="bad quality, worst quality")
+    p.add_argument("--max_seq_len", type=int, default=226,
+                   help="T5 padding length for prompt embeddings. MUST match what the "
+                        "Wan transformer was pretrained against (226 for Wan 2.2). "
+                        "Earlier cache builds used 512 by mistake, which silently corrupts "
+                        "cross-attention at inference.")
     p.add_argument("--limit", type=int, default=None,
                    help="Only process the first N validated pairs (for smoke).")
     p.add_argument("--device", type=str,
@@ -236,17 +241,36 @@ def main() -> None:
     text_encoder.eval().requires_grad_(False).to(device)
 
     unique_slugs = sorted({slug for _, slug, _, _ in pairs})
-    max_seq_len = 512
+    max_seq_len = args.max_seq_len
+    print(f"[prompts] T5 max_seq_len = {max_seq_len}")
+
+    # Match wan_t2v_controlnet_pipeline._get_t5_prompt_embeds EXACTLY: apply
+    # prompt_clean (whitespace+ftfy normalisation) and zero-replace the padded
+    # positions of the T5 last_hidden_state. T5 is bidirectional and produces
+    # non-zero outputs for pad tokens; the pipeline overwrites those with
+    # zeros, so we must too or the cached positive will contain "garbage" at
+    # pad positions while pipeline-encoded negatives have clean zeros there,
+    # producing asymmetric CFG that silently corrupts inference to noise.
+    from wan_t2v_controlnet_pipeline import prompt_clean
 
     def encode_text(prompt: str) -> torch.Tensor:
-        ti = tokenizer([prompt], padding="max_length", max_length=max_seq_len,
+        cleaned = prompt_clean(prompt)
+        ti = tokenizer([cleaned], padding="max_length", max_length=max_seq_len,
                        truncation=True, add_special_tokens=True,
                        return_attention_mask=True, return_tensors="pt")
         ids = ti.input_ids.to(device)
         mask = ti.attention_mask.to(device)
+        seq_lens = mask.gt(0).sum(dim=1).long()
         with torch.no_grad():
             emb = text_encoder(ids, mask).last_hidden_state  # (1, L, D)
-        return emb.squeeze(0).to(torch.bfloat16).cpu()
+        emb = emb.to(torch.bfloat16)
+        # Truncate to actual prompt length, then re-pad with explicit zeros.
+        emb_list = [u[:v] for u, v in zip(emb, seq_lens)]
+        emb = torch.stack(
+            [torch.cat([u, u.new_zeros(max_seq_len - u.size(0), u.size(1))])
+             for u in emb_list], dim=0
+        )
+        return emb.squeeze(0).cpu()
 
     print(f"[prompts] encoding {len(unique_slugs)} unique slugs")
     for slug in tqdm(unique_slugs, desc="prompts"):

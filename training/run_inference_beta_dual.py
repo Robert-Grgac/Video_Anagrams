@@ -1,11 +1,12 @@
-"""Standalone inference for a trained beta ControlNet.
+"""Standalone dual-CN inference for beta-003 / beta-004.
 
-Loads a saved ControlNet checkpoint, builds the full Wan 2.2 pipeline with
-both experts (high-noise + low-noise), runs once on a (canny, prompt) pair
-from the precomputed cache, and writes one mp4.
+Loads two trained ControlNet checkpoints (one per expert), builds the dual
+Wan 2.2 pipeline with both transformers and both controlnets, and runs the
+same (weights × ends) sweep as ``run_inference_beta.py`` — one mp4 per
+(weight, end) cell.
 
-Uses pipe.enable_model_cpu_offload() so the two-expert pipeline fits on a
-single 44GB A40 — both experts at bf16 ≈ 56GB if both stayed on GPU.
+Mirrors ``run_inference_beta.py`` in CLI shape, with ``--checkpoint_path``
+replaced by ``--high_checkpoint`` and ``--low_checkpoint``.
 """
 from __future__ import annotations
 
@@ -25,15 +26,19 @@ from training.utils import cast_respecting_fp32_modules, detect_boundary_ratio
 from training.input_prompts import PROMPTS_BATCH_1, PROMPTS_BATCH_2
 
 if TYPE_CHECKING:
-    from wan_t2v_controlnet_pipeline import WanTextToVideoControlnetPipeline
+    from wan_t2v_controlnet_pipeline_dual import WanTextToVideoDualControlnetPipeline
 
 ALL_PROMPTS = {**PROMPTS_BATCH_1, **PROMPTS_BATCH_2}
 
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
-    p.add_argument("--checkpoint_path", type=str, required=True,
-                   help="Trained ControlNet .safetensors (e.g. .../beta-001_final.safetensors).")
+    p.add_argument("--high_checkpoint", type=str, required=True,
+                   help="Trained ControlNet .safetensors used as the high-noise CN "
+                        "(typically beta-001_final.safetensors).")
+    p.add_argument("--low_checkpoint", type=str, required=True,
+                   help="Trained ControlNet .safetensors used as the low-noise CN "
+                        "(beta-003 EMA or beta-004 EMA).")
     p.add_argument("--base_model_path", type=str, required=True,
                    help="Wan-AI Wan2.2-T2V-A14B-Diffusers snapshot dir.")
     p.add_argument("--controlnet_config_repo", type=str, required=True,
@@ -60,34 +65,13 @@ def parse_args() -> argparse.Namespace:
                         "If set, builds the pipeline once and writes one mp4 per weight; "
                         "output filenames get a '_w{weight}' suffix. Overrides --controlnet_weight.")
     p.add_argument("--controlnet_stride", type=int, default=3)
-    # ControlNet was trained only against the high-noise expert (sigma >= 0.875).
-    # Limit injection to that regime: with FlowMatch's roughly-linear sigma
-    # schedule, current_sampling_percent < (1 - boundary_ratio) = 0.125 covers
-    # exactly the steps where the high-noise expert is active.
     p.add_argument("--controlnet_guidance_start", type=float, default=0.0)
-    p.add_argument("--controlnet_guidance_end", type=float, default=0.125)
+    p.add_argument("--controlnet_guidance_end", type=float, default=1.0)
     p.add_argument("--ends", type=str, default=None,
                    help="Optional comma-separated list of controlnet_guidance_end values. "
                         "Combined with --weights as a Cartesian product. "
                         "When set, output filenames get a '_w{weight}_e{end}' suffix. "
                         "Overrides --controlnet_guidance_end.")
-    p.add_argument("--dynamic_cn_end", action="store_true",
-                   help="Compute controlnet_guidance_end from the scheduler's sigma "
-                        "trajectory (the step fraction at which sigma first drops below "
-                        "boundary_ratio). Mirrors train_beta7._compute_cn_end_high_noise. "
-                        "Overrides both --controlnet_guidance_end and --ends.")
-    p.add_argument("--prompt_cache_path", type=str, default=None,
-                   help="Path to a precomputed positive prompt embedding .pt file "
-                        "(e.g. $HOME/cache/wan-beta/prompts/misty_morning.pt). When set, "
-                        "the pipeline is called with prompt_embeds= instead of raw text, "
-                        "reproducing the training-time eval conditioning. The negative "
-                        "prompt is then encoded fresh at --prompt_embed_max_len (or the "
-                        "loaded positive's seq length if unset) so both sides match.")
-    p.add_argument("--prompt_embed_max_len", type=int, default=None,
-                   help="Pad length for re-encoding the negative prompt when "
-                        "--prompt_cache_path is set. Default: derive from the loaded "
-                        "positive tensor's sequence dim. Match the precompute setting "
-                        "(beta cache uses 512; pipeline default is 226).")
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--fps", type=int, default=8)
     return p.parse_args()
@@ -109,28 +93,8 @@ def load_canny_image(cache_dir: Path, face_idx: int) -> Image.Image:
     canny_path = cache_dir / "canny" / f"face_{face_idx}.pt"
     if not canny_path.exists():
         raise FileNotFoundError(canny_path)
-    canny_u8 = torch.load(canny_path, map_location="cpu", weights_only=True)  # (3, H, W) uint8
+    canny_u8 = torch.load(canny_path, map_location="cpu", weights_only=True)
     return Image.fromarray(canny_u8.permute(1, 2, 0).numpy())
-
-
-def compute_dynamic_cn_end(base_model_path: str, num_inference_steps: int,
-                           boundary_ratio: float) -> tuple[float, int]:
-    """Step-fraction at which sigma first drops below boundary_ratio.
-
-    Mirrors train_beta7._compute_cn_end_high_noise so inference uses the same
-    high-noise-only CN gate the run was trained for.
-    """
-    from diffusers.schedulers import FlowMatchEulerDiscreteScheduler
-    sched = FlowMatchEulerDiscreteScheduler.from_pretrained(
-        base_model_path, subfolder="scheduler",
-    )
-    sched.set_timesteps(num_inference_steps)
-    sigmas = sched.sigmas[:-1].detach().cpu()
-    below = (sigmas < boundary_ratio).nonzero(as_tuple=False)
-    if below.numel() == 0:
-        return 1.0, num_inference_steps
-    first_low = int(below[0].item())
-    return first_low / num_inference_steps, first_low
 
 
 def save_video(frames_np: np.ndarray, path: Path, fps: int = 8) -> None:
@@ -140,15 +104,32 @@ def save_video(frames_np: np.ndarray, path: Path, fps: int = 8) -> None:
     imageio.mimsave(str(path), list(arr), fps=fps, codec="libx264")
 
 
-def build_pipeline(args: argparse.Namespace) -> "WanTextToVideoControlnetPipeline":
+def _load_controlnet(controlnet_config_repo: str, ckpt_path: str, label: str):
+    from safetensors.torch import load_file
+    from wan_controlnet import WanControlnet
+
+    print(f"[load] controlnet config from {controlnet_config_repo} ({label}) ...")
+    config = WanControlnet.load_config(controlnet_config_repo)
+    cn = WanControlnet.from_config(config)
+    cast_respecting_fp32_modules(cn, torch.bfloat16)
+    print(f"[load] controlnet weights from {ckpt_path} ({label}) ...")
+    sd = load_file(ckpt_path)
+    missing, unexpected = cn.load_state_dict(sd, strict=False)
+    if missing:
+        print(f"[warn] {label}: missing keys when loading controlnet: {len(missing)}")
+    if unexpected:
+        print(f"[warn] {label}: unexpected keys when loading controlnet: {len(unexpected)}")
+    cn.eval()
+    return cn
+
+
+def build_pipeline(args: argparse.Namespace) -> "WanTextToVideoDualControlnetPipeline":
     from diffusers import AutoencoderKLWan
     from diffusers.schedulers import FlowMatchEulerDiscreteScheduler
     from transformers import AutoTokenizer, UMT5EncoderModel
-    from safetensors.torch import load_file
 
     from wan_transformer import CustomWanTransformer3DModel
-    from wan_controlnet import WanControlnet
-    from wan_t2v_controlnet_pipeline import WanTextToVideoControlnetPipeline
+    from wan_t2v_controlnet_pipeline_dual import WanTextToVideoDualControlnetPipeline
 
     base = args.base_model_path
 
@@ -168,11 +149,6 @@ def build_pipeline(args: argparse.Namespace) -> "WanTextToVideoControlnetPipelin
         base, subfolder="transformer", torch_dtype=torch.bfloat16,
     ).eval()
 
-    # Load transformer_2 (low-noise expert) as the SAME custom subclass so it
-    # accepts the controlnet_states kwarg the pipeline always passes. The class
-    # only overrides forward(); state_dict keys match WanTransformer3DModel
-    # exactly, so the checkpoint loads cleanly. With controlnet_states=None
-    # (or unused stride misalignment), the residuals contribute nothing here.
     print(f"[load] low-noise transformer_2 ...")
     transformer_2 = CustomWanTransformer3DModel.from_pretrained(
         base, subfolder="transformer_2", torch_dtype=torch.bfloat16,
@@ -183,43 +159,34 @@ def build_pipeline(args: argparse.Namespace) -> "WanTextToVideoControlnetPipelin
         base, subfolder="scheduler",
     )
 
-    print(f"[load] controlnet config from {args.controlnet_config_repo} ...")
-    config = WanControlnet.load_config(args.controlnet_config_repo)
-    controlnet = WanControlnet.from_config(config)
-    cast_respecting_fp32_modules(controlnet, torch.bfloat16)
-    print(f"[load] controlnet weights from {args.checkpoint_path} ...")
-    sd = load_file(args.checkpoint_path)
-    missing, unexpected = controlnet.load_state_dict(sd, strict=False)
-    if missing:
-        print(f"[warn] missing keys when loading controlnet: {len(missing)}")
-    if unexpected:
-        print(f"[warn] unexpected keys when loading controlnet: {len(unexpected)}")
-    controlnet.eval()
+    controlnet_high = _load_controlnet(args.controlnet_config_repo,
+                                       args.high_checkpoint, label="high")
+    controlnet_low = _load_controlnet(args.controlnet_config_repo,
+                                      args.low_checkpoint, label="low")
 
     boundary_ratio, src = detect_boundary_ratio(base, dict(transformer.config))
     print(f"[detect] boundary_ratio={boundary_ratio} ({src})")
 
-    pipe = WanTextToVideoControlnetPipeline(
+    pipe = WanTextToVideoDualControlnetPipeline(
         tokenizer=tokenizer,
         text_encoder=text_encoder,
         transformer=transformer,
         transformer_2=transformer_2,
         vae=vae,
-        controlnet=controlnet,
+        controlnet_high=controlnet_high,
+        controlnet_low=controlnet_low,
         scheduler=scheduler,
         boundary_ratio=boundary_ratio,
     )
     pipe.enable_model_cpu_offload()
 
-    # Pin the ControlNet to GPU. The pipeline's prepare_controlnet_frames reads
-    # self.controlnet.device at prep time; under model_cpu_offload that returns
-    # "cpu", and accelerate's pre-forward hook does not migrate the resulting
-    # input tensor → CPU/GPU device mismatch inside the first Conv3D. The
-    # ControlNet is small (~1 GB at bf16) and runs every step, so pinning has
-    # no memory cost and avoids the offload round-trip on each call.
+    # Same CPU/GPU mismatch on first Conv3D as run_inference_beta.py; pin BOTH
+    # controlnets and strip their accelerate hooks. Total CN-on-GPU is ~1.4 GB
+    # at bf16 — well within the A40 budget.
     from accelerate.hooks import remove_hook_from_module
-    remove_hook_from_module(pipe.controlnet, recurse=True)
-    pipe.controlnet.to("cuda")
+    for cn in (pipe.controlnet_high, pipe.controlnet_low):
+        remove_hook_from_module(cn, recurse=True)
+        cn.to("cuda")
     return pipe
 
 
@@ -240,60 +207,29 @@ def main() -> int:
         weights = [float(w) for w in args.weights.split(",") if w.strip()]
     else:
         weights = [args.controlnet_weight]
-    if args.dynamic_cn_end:
-        cn_end, first_low = compute_dynamic_cn_end(
-            args.base_model_path, args.num_inference_steps, pipe.boundary_ratio,
-        )
-        print(f"[dynamic_cn_end] boundary_ratio={pipe.boundary_ratio} "
-              f"num_inference_steps={args.num_inference_steps} "
-              f"first_low_idx={first_low} cn_end={cn_end:.4f}")
-        ends = [cn_end]
-    elif args.ends:
+    if args.ends:
         ends = [float(e) for e in args.ends.split(",") if e.strip()]
     else:
         ends = [args.controlnet_guidance_end]
-    sweep_active = bool(args.weights) or bool(args.ends) or args.dynamic_cn_end
+    sweep_active = bool(args.weights) or bool(args.ends)
     print(f"[sweep] {len(weights)} weight(s) x {len(ends)} end(s) = "
           f"{len(weights) * len(ends)} videos")
-
-    if args.prompt_cache_path:
-        pos_emb = torch.load(args.prompt_cache_path, map_location="cpu",
-                             weights_only=True).to(torch.bfloat16)
-        if pos_emb.dim() == 2:
-            pos_emb = pos_emb.unsqueeze(0)
-        max_len = args.prompt_embed_max_len or pos_emb.shape[1]
-        print(f"[prompt-cache] loaded {args.prompt_cache_path} "
-              f"shape={tuple(pos_emb.shape)}")
-        print(f"[prompt-cache] encoding negative prompt "
-              f"('{args.negative_prompt}') at max_sequence_length={max_len}")
-        pos_emb = pos_emb.to(pipe._execution_device)
-        neg_emb = pipe._get_t5_prompt_embeds(
-            prompt=args.negative_prompt,
-            max_sequence_length=max_len,
-            device=pipe._execution_device,
-            dtype=torch.bfloat16,
-        )
-        print(f"[prompt-cache] negative embed shape={tuple(neg_emb.shape)}")
-        prompt_kwargs = dict(prompt_embeds=pos_emb, negative_prompt_embeds=neg_emb)
-    else:
-        prompt_kwargs = dict(prompt=prompt_text, negative_prompt=args.negative_prompt)
 
     out_path = Path(args.output_path)
     from accelerate.hooks import remove_hook_from_module
     for w in weights:
         for e in ends:
-            # Diffusers' model_cpu_offload re-attaches an accelerate hook to the
-            # controlnet at the start of each __call__; its pre_forward then
-            # routes inputs to CPU and we get a CPU/GPU mismatch on the first
-            # Conv3D. Strip the hook and pin the controlnet to GPU before every
-            # iteration of the sweep.
-            remove_hook_from_module(pipe.controlnet, recurse=True)
-            pipe.controlnet.to("cuda")
-            # Reseed so the only varying factors across videos are (weight, end).
+            # Re-pin both CNs each iteration: model_cpu_offload re-attaches an
+            # accelerate hook on every __call__, which would route inputs to
+            # CPU and trigger a device mismatch on the first Conv3D.
+            for cn in (pipe.controlnet_high, pipe.controlnet_low):
+                remove_hook_from_module(cn, recurse=True)
+                cn.to("cuda")
             generator = torch.Generator().manual_seed(args.seed)
             out = pipe(
                 controlnet_frames=[canny_img] * args.num_frames,
-                **prompt_kwargs,
+                prompt=prompt_text,
+                negative_prompt=args.negative_prompt,
                 height=args.height,
                 width=args.width,
                 num_frames=args.num_frames,
@@ -306,7 +242,7 @@ def main() -> int:
                 generator=generator,
                 output_type="np",
             )
-            frames = out.frames[0]  # (T, H, W, 3) float in [0, 1]
+            frames = out.frames[0]
             if not sweep_active:
                 target = out_path
             else:

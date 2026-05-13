@@ -31,9 +31,17 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from training.dataset_beta import BetaPairDataset
+from training.utils import (
+    cast_respecting_fp32_modules,
+    detect_boundary_ratio,
+    mean_residual_l2,
+    _collate_keep_meta,
+    _save_safetensors,
+    _format_seconds,
+)
 
 
 # ---------------- helpers ----------------
@@ -47,72 +55,12 @@ def _git_sha() -> str:
         import subprocess
         out = subprocess.check_output(
             ["git", "rev-parse", "--short", "HEAD"],
-            cwd=str(Path(__file__).parent.parent),
+            cwd=str(Path(__file__).parent.parent.parent),
             stderr=subprocess.DEVNULL,
         )
         return out.decode().strip()
     except Exception:
         return "unknown"
-
-
-def cast_respecting_fp32_modules(model: nn.Module, dtype: torch.dtype) -> None:
-    """Cast every parameter to ``dtype`` except those whose qualified name
-    matches a substring in ``model._keep_in_fp32_modules``.
-
-    Diffusers' built-in loaders honor that list; constructing a model from a
-    bare config does not, so a blanket ``.to(bf16)`` would silently demote
-    norms / sinusoidal time embeds / scale_shift tables.
-    """
-    keep = list(getattr(model, "_keep_in_fp32_modules", []) or [])
-    skipped: list[str] = []
-    casted: list[str] = []
-    for name, param in model.named_parameters():
-        if any(k in name for k in keep):
-            skipped.append(name)
-        else:
-            param.data = param.data.to(dtype)
-            casted.append(name)
-    for name, buf in model.named_buffers():
-        if any(k in name for k in keep):
-            continue
-        buf.data = buf.data.to(dtype)
-    print(f"[cast] {len(casted)} params -> {dtype}; "
-          f"{len(skipped)} kept fp32 (e.g. {skipped[:3]})")
-
-
-def detect_boundary_ratio(base_model_path: str | Path,
-                          transformer_config: dict,
-                          override: Optional[float] = None) -> tuple[float, str]:
-    """Return (boundary_ratio, source_string).
-
-    Priority: explicit ``override`` -> ``transformer.config.boundary_ratio``
-    -> ``model_index.json`` of the base pipeline -> default ``0.5`` (upper 50%).
-    """
-    if override is not None:
-        return float(override), "cli_override"
-    for key in ("boundary_ratio", "boundary_sigma"):
-        v = transformer_config.get(key)
-        if v is not None:
-            return float(v), f"transformer.config.{key}"
-    mi = Path(base_model_path) / "model_index.json"
-    if mi.exists():
-        try:
-            data = json.loads(mi.read_text())
-            v = data.get("boundary_ratio")
-            if v is not None:
-                return float(v), "model_index.json.boundary_ratio"
-        except Exception:
-            pass
-    return 0.5, "fallback_upper_50pct"
-
-
-def mean_residual_l2(residuals) -> float:
-    if residuals is None:
-        return 0.0
-    if isinstance(residuals, (list, tuple)):
-        vals = [r.detach().float().pow(2).mean().sqrt().item() for r in residuals]
-        return float(np.mean(vals))
-    return float(residuals.detach().float().pow(2).mean().sqrt().item())
 
 
 # ---------------- main ----------------
@@ -211,7 +159,7 @@ def main() -> None:
         _CARD_PATH = Path(cfg.card_path)
         _RESULTS_PATH = _CARD_PATH.parent / f"{_CARD_PATH.stem}_results.json"
     else:
-        _RESULTS_PATH = Path("training_cards") / f"{cfg.run_name}_results.json"
+        _RESULTS_PATH = Path("training_cards") / "beta001" / f"{cfg.run_name}_results.json"
 
     _RESULTS_STATE.update({
         "status": "running",
@@ -486,31 +434,6 @@ def main() -> None:
 
 
 # ---------------- support pieces ----------------
-
-def _collate_keep_meta(samples):
-    """Tensor-stack tensor fields, list-collect scalar fields."""
-    out = {}
-    for k in samples[0]:
-        if torch.is_tensor(samples[0][k]):
-            out[k] = torch.stack([s[k] for s in samples], dim=0)
-        else:
-            out[k] = [s[k] for s in samples]
-    return out
-
-
-def _save_safetensors(model: nn.Module, path: Path) -> None:
-    from safetensors.torch import save_file
-    sd = {k: v.detach().cpu().contiguous() for k, v in model.state_dict().items()}
-    path.parent.mkdir(parents=True, exist_ok=True)
-    save_file(sd, str(path))
-
-
-def _format_seconds(s: float) -> str:
-    s = int(s)
-    h, r = divmod(s, 3600)
-    m, sec = divmod(r, 60)
-    return f"{h:02d}:{m:02d}:{sec:02d}"
-
 
 def run_inference_smoke(cfg, controlnet, dataset, base_model_path: str,
                         device: torch.device, mp4_path: Path) -> None:

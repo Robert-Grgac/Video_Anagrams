@@ -1,14 +1,16 @@
 """Substitute ``<AUTO:key>`` markers in a training card from sibling JSONs.
 
-Reads ``training_cards/{run_id}_results.json`` and (optionally)
-``training_cards/{run_id}_smoke_results.json``, then replaces every
-``<AUTO:key>`` in the card with ``str(value)``. Markers without a JSON entry
-are rewritten as ``<AUTO:key — MISSING>`` so they're visible in the rendered
-card instead of silently dropped.
+Reads ``{card_dir}/{run_id}_results.json`` and (optionally)
+``{card_dir}/{run_id}_smoke_results.json`` (where ``card_dir`` is the
+parent directory of the card .md file, e.g.
+``training_cards/beta001/``), then replaces every ``<AUTO:key>`` in the
+card with ``str(value)``. Markers without a JSON entry are rewritten as
+``<AUTO:key — MISSING>`` so they're visible in the rendered card instead
+of silently dropped.
 
 Standalone usage::
 
-    python -m training.autofill_card training_cards/beta-001.md
+    python -m training.autofill_card training_cards/beta001/beta-001.md
 """
 from __future__ import annotations
 

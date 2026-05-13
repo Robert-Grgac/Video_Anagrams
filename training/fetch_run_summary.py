@@ -99,8 +99,15 @@ def main():
 
     # scan_history streams all rows; this is the lowest-overhead path for a
     # ~10k-step run. We ask for only the keys we want.
+    # wandb's scan_history with keys= returns rows containing ALL listed keys
+    # (strict intersection), so any key never logged in this run drops every
+    # row. Filter the request to keys actually present on the run summary;
+    # missing metrics stay in `keys` for the per-metric loop below and just
+    # come out as all-NaN.
     keys = NUMERIC_METRICS + ["step"]
-    rows = list(run.scan_history(keys=keys, page_size=10000))
+    present_in_run = set(run.summary.keys())
+    fetch_keys = [k for k in keys if k in present_in_run]
+    rows = list(run.scan_history(keys=fetch_keys, page_size=10000))
     n = len(rows)
     if n == 0:
         raise SystemExit("no rows returned — check run id / keys")

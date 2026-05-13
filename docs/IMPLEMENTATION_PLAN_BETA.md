@@ -101,12 +101,12 @@ Move:
 
 - `training/precompute_beta.py` — extracts Canny, encodes VAE latents and T5 embeds; writes to `cache/`.
 - `training/dataset_beta.py` — `BetaPairDataset`: loads from `cache/` only.
-- `training/train_beta.py` — single-GPU training loop (cold init).
-- `training/smoke_test_beta.py` — runs precompute on 5 pairs + 5 training steps; designed for srun verification before launching the real job.
+- `training.beta001.train.py` — single-GPU training loop (cold init).
+- `training.beta001.smoke_test.py` — runs precompute on 5 pairs + 5 training steps; designed for srun verification before launching the real job.
 - `training/autofill_card.py` — fills `<AUTO:key>` markers in a training card from a sibling `_results.json` (see §6.5).
 - `slurm/{smoke_test,precompute,train_beta}.sbatch` — cluster job scripts (see §11).
 - `training_cards/TEMPLATE.md` — blank template for future runs/ablations.
-- `training_cards/beta-001.md` — this run's card; pre-filled before launch, machine fields auto-filled at end.
+- `training_cards/beta001/beta-001.md` — this run's card; pre-filled before launch, machine fields auto-filled at end.
 - `requirements_train_beta.txt` — adds `bitsandbytes`, `wandb`, `opencv-python` (anything not already in `requirements.txt`).
 
 ### Modified files
@@ -225,16 +225,16 @@ DataLoader: `batch_size=1, num_workers=2, persistent_workers=True, pin_memory=Tr
 
 ---
 
-## 4. Phase 3 — Training script (`training/train_beta.py`)
+## 4. Phase 3 — Training script (`training.beta001.train.py`)
 
 ### CLI
 ```
-python -m training.train_beta \
+python -m training.beta001.train \
     --cache_dir       $WORK/wan-beta/cache \
     --base_model_path $WAN_MODEL \
     --controlnet_config_repo TheDenk/wan2.2-t2v-a14b-controlnet-hed-v1 \
     --output_dir      $WORK/wan-beta/checkpoints \
-    --card_path       training_cards/beta-001.md \
+    --card_path       training_cards/beta001/beta-001.md \
     --wandb_project   wan-controlnet-beta \
     --run_name        beta-001 \
     --num_frames 9 --height 512 --width 512 \
@@ -427,13 +427,13 @@ Wan 2.2 A14B uses a mixture-of-experts split between two transformers along the 
 1. Read `transformer.config` after loading; look for fields like `boundary_ratio`, `boundary_sigma`, or similar.
 2. If present: sample timesteps `t` such that `sigma(t) >= boundary`.
 3. If absent: default to **upper 50% of `scheduler.timesteps`** (high-noise = early denoising = high sigma).
-4. Document the chosen rule and boundary value in `training_cards/beta-001.md`.
+4. Document the chosen rule and boundary value in `training_cards/beta001/beta-001.md`.
 
 A simple implementation is to filter `scheduler.timesteps` once at startup into a `high_noise_timesteps` tensor, then `t_idx = randint(0, len(high_noise_timesteps))`.
 
 ---
 
-## 5. Phase 4 — Smoke test (`training/smoke_test_beta.py`)
+## 5. Phase 4 — Smoke test (`training.beta001.smoke_test.py`)
 
 ### Purpose
 A single Python script the user runs in srun on the cluster to verify the entire pipeline compiles and runs end-to-end on a tiny subset, before scheduling the real 24h job. Catches missing deps, HF auth issues, OOMs, shape mismatches.
@@ -445,7 +445,7 @@ A single Python script the user runs in srun on the cluster to verify the entire
 #    This implicitly exercises the latent-norm round-trip self-test (§2 step 4),
 #    which aborts the run if the VAE normalization constants are wrong.
 # 3. Assert all 5 expected cache files exist with expected shapes.
-# 4. Run training.train_beta.main() with cache_dir=$WORK/wan-beta/cache/_smoke/,
+# 4. Run training.beta001.train.main() with cache_dir=$WORK/wan-beta/cache/_smoke/,
 #    num_epochs=4 (5 pairs × 4 epochs = 20 steps — enough to get a stable
 #    per-step wall-time estimate after warmup).
 # 5. Per-step wall-time measurement:
@@ -468,7 +468,7 @@ A single Python script the user runs in srun on the cluster to verify the entire
 #       projected wall-time for 10000 steps @ median: HH:MM:SS
 #       projected wall-time for 10000 steps @ p90:    HH:MM:SS
 #       peak GPU memory: XX.XX GB
-#    Also append these numbers to training_cards/beta-001_smoke_results.json so they
+#    Also append these numbers to training_cards/beta001/beta-001_smoke_results.json so they
 #    can be referenced when filling beta-001.md before launch.
 # 9. Hard fail conditions: NaN loss, GPU mem ≥ 44GB, transformer param has grad,
 #    no controlnet param has grad, fp32 dtype assert fails, or median per-step > 8.5s
@@ -481,7 +481,7 @@ A single Python script the user runs in srun on the cluster to verify the entire
 ### Suggested srun invocation (user runs this)
 ```
 srun --gres=gpu:1 --mem=64G --time=00:20:00 --partition=<your_gpu_partition> \
-    python -m training.smoke_test_beta
+    python -m training.beta001.smoke_test
 ```
 
 Or via the prepared sbatch (see §11): `sbatch slurm/smoke_test.sbatch`.
@@ -604,21 +604,21 @@ After the run, the training script:
 ### Auto-filled fields (script knows these)
 From the training run: `status`, `date_started`, `date_finished`, `wall_time`, `final_loss`, `gpu_peak_mem_gb`, `wandb_url`, `trainable_params`, `pair_count`, `boundary_sigma`, `high_noise_rule`, `cache_disk_gb`, `cluster_partition`, `git_sha`.
 
-From the smoke test (sourced from `training_cards/beta-001_smoke_results.json` if present): `smoke_step_median`, `smoke_step_p90`, `smoke_projected_wall_time`, `smoke_latent_roundtrip_mse`. The autofill script reads both `_results.json` and `_smoke_results.json`; the smoke file is optional but lets the user fill the card before launch.
+From the smoke test (sourced from `training_cards/beta001/beta-001_smoke_results.json` if present): `smoke_step_median`, `smoke_step_p90`, `smoke_projected_wall_time`, `smoke_latent_roundtrip_mse`. The autofill script reads both `_results.json` and `_smoke_results.json`; the smoke file is optional but lets the user fill the card before launch.
 
 ### Human-filled fields (post-run, after looking at wandb + video)
 "Loss curve descended?", "Inference sample observations", "Verdict", "Next action".
 
 ### Robustness
 - Training script wraps the autofill call in `try/except` — a failed autofill never kills an otherwise-good run, just logs a warning.
-- If the script crashes mid-training, an `atexit` hook still writes a partial JSON with `status: failed` and partial wall-time. The next manual run of `python -m training.autofill_card training_cards/beta-001.md` will fill what's available.
+- If the script crashes mid-training, an `atexit` hook still writes a partial JSON with `status: failed` and partial wall-time. The next manual run of `python -m training.autofill_card training_cards/beta001/beta-001.md` will fill what's available.
 - The card is valid markdown throughout; markers are visible placeholders, not blockers.
 
 ### Standalone usage
 ```
-python -m training.autofill_card training_cards/beta-001.md
+python -m training.autofill_card training_cards/beta001/beta-001.md
 ```
-Reads `training_cards/beta-001_results.json` and updates the card.
+Reads `training_cards/beta001/beta-001_results.json` and updates the card.
 
 ---
 
@@ -635,7 +635,7 @@ Per-step cost on 1× A40, bf16, **T=9** (BETA default), 512×512, A14B high-nois
 
 Fits the 24h budget with comfortable margin.
 
-**The smoke test produces an actual measured per-step number on this exact hardware** (see §5 step 5). Use that instead of the rough estimate above — read it from `training_cards/beta-001_smoke_results.json`.
+**The smoke test produces an actual measured per-step number on this exact hardware** (see §5 step 5). Use that instead of the rough estimate above — read it from `training_cards/beta001/beta-001_smoke_results.json`.
 
 Decision rule after smoke:
 - median per-step ≤ 4s → launch as-is.
@@ -655,16 +655,16 @@ Phases 1–5 follow:
 
 1. **Phase 1**: `training/precompute_beta.py` — implement and dry-run on 5 pairs locally (no GPU needed if VAE/T5 fit in CPU-RAM-only, otherwise on cluster smoke).
 2. **Phase 2**: `training/dataset_beta.py` — depends on Phase 1's manifest format.
-3. **Phase 3**: `training/train_beta.py` + `training/autofill_card.py` — depends on Phase 2.
-4. **Phase 4**: `training/smoke_test_beta.py` — depends on Phases 1, 2, 3.
-5. **Phase 5**: `training_cards/TEMPLATE.md` + `training_cards/beta-001.md` — write template, fill beta-001 *before* launch (everything except `<AUTO:>` markers and qualitative Results).
+3. **Phase 3**: `training.beta001.train.py` + `training/autofill_card.py` — depends on Phase 2.
+4. **Phase 4**: `training.beta001.smoke_test.py` — depends on Phases 1, 2, 3.
+5. **Phase 5**: `training_cards/TEMPLATE.md` + `training_cards/beta001/beta-001.md` — write template, fill beta-001 *before* launch (everything except `<AUTO:>` markers and qualitative Results).
 6. **Phase 6**: `slurm/*.sbatch` — wrap the three commands above in cluster-ready job scripts (see §11).
 
 ### User's launch sequence on cluster
 1. `sbatch slurm/smoke_test.sbatch` → fix anything that fails.
 2. `sbatch slurm/precompute.sbatch` → check `$WORK/wan-beta/cache/` disk usage afterward.
-3. `sbatch slurm/train_beta.sbatch` → monitor wandb. Auto-saves checkpoint, runs end-of-run inference, autofills `training_cards/beta-001.md`.
-4. After completion, look at the wandb loss curve and the inference video, then fill the qualitative Results entries in `training_cards/beta-001.md`.
+3. `sbatch slurm/train_beta.sbatch` → monitor wandb. Auto-saves checkpoint, runs end-of-run inference, autofills `training_cards/beta001/beta-001.md`.
+4. After completion, look at the wandb loss curve and the inference video, then fill the qualitative Results entries in `training_cards/beta001/beta-001.md`.
 
 ---
 
@@ -780,7 +780,7 @@ export WAN_MODEL=$WORK/wan-beta/models/Wan2.2-T2V-A14B-Diffusers
 export HED_CONFIG=$WORK/wan-beta/models/wan2.2-t2v-a14b-controlnet-hed-v1
 export WANDB_MODE=${WANDB_MODE:-online}
 
-srun python -m training.smoke_test_beta \
+srun python -m training.beta001.smoke_test \
     --base_model_path $WAN_MODEL \
     --controlnet_config_repo $HED_CONFIG \
     --work_dir $WORK/wan-beta
@@ -834,13 +834,13 @@ export WAN_MODEL=$WORK/wan-beta/models/Wan2.2-T2V-A14B-Diffusers
 export HED_CONFIG=$WORK/wan-beta/models/wan2.2-t2v-a14b-controlnet-hed-v1
 export WANDB_MODE=${WANDB_MODE:-online}
 
-srun python -m training.train_beta \
+srun python -m training.beta001.train \
     --cache_dir       $WORK/wan-beta/cache \
     --base_model_path $WAN_MODEL \
     --controlnet_config_repo $HED_CONFIG \
     --output_dir      $WORK/wan-beta/checkpoints \
     --inference_output_dir $WORK/wan-beta/outputs \
-    --card_path       training_cards/beta-001.md \
+    --card_path       training_cards/beta001/beta-001.md \
     --wandb_project   wan-controlnet-beta \
     --run_name        beta-001 \
     --num_frames 9 --height 512 --width 512 \

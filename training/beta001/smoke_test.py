@@ -19,11 +19,11 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from training import precompute_beta as precompute_mod
 from training.dataset_beta import BetaPairDataset
-from training.train_beta import (
+from training.utils import (
     cast_respecting_fp32_modules,
     detect_boundary_ratio,
     mean_residual_l2,
@@ -270,7 +270,7 @@ def main() -> int:
     print(f"projected 10000 steps @ p90:    {fmt_hms(proj_p90_s)}")
     print(f"peak GPU memory: {timing['peak_mem_gb']:.2f} GB")
 
-    smoke_results_path = Path("training_cards") / f"{args.card_run_id}_smoke_results.json"
+    smoke_results_path = Path("training_cards") / "beta001" / f"{args.card_run_id}_smoke_results.json"
     smoke_results_path.parent.mkdir(parents=True, exist_ok=True)
     smoke_results_path.write_text(json.dumps({
         "smoke_step_median": f"{median:.2f}",

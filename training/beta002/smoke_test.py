@@ -27,16 +27,16 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from training.dataset_beta import BetaPairDataset
-from training.train_beta import (
+from training.utils import (
     cast_respecting_fp32_modules,
     detect_boundary_ratio,
     mean_residual_l2,
     _collate_keep_meta,
 )
-from training.train_beta2 import (
+from training.beta002.train import (
     load_expert,
     free_then_load_expert,
     next_subfolder_for,

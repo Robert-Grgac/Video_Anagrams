@@ -33,10 +33,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from training.dataset_beta import BetaPairDataset
-from training.train_beta import (
+from training.utils import (
     cast_respecting_fp32_modules,
     detect_boundary_ratio,
     mean_residual_l2,
@@ -55,7 +55,7 @@ def _git_sha() -> str:
         import subprocess
         out = subprocess.check_output(
             ["git", "rev-parse", "--short", "HEAD"],
-            cwd=str(Path(__file__).parent.parent),
+            cwd=str(Path(__file__).parent.parent.parent),
             stderr=subprocess.DEVNULL,
         )
         return out.decode().strip()
@@ -189,7 +189,7 @@ def main() -> None:
         _CARD_PATH = Path(cfg.card_path)
         _RESULTS_PATH = _CARD_PATH.parent / f"{_CARD_PATH.stem}_results.json"
     else:
-        _RESULTS_PATH = Path("training_cards") / f"{cfg.run_name}_results.json"
+        _RESULTS_PATH = Path("training_cards") / "beta002" / f"{cfg.run_name}_results.json"
 
     _RESULTS_STATE.update({
         "status": "running",

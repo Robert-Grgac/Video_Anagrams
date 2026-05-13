@@ -1,23 +1,19 @@
 #!/bin/bash
-#SBATCH --job-name=wan-beta-infer
+#SBATCH --job-name=wan-beta-infer-dual
 #SBATCH --partition=dmb
-#SBATCH --nodelist=hpc-node31
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1
 #SBATCH --time=02:00:00
-#SBATCH --mem=32G
-#SBATCH --output=/home/s2710099/logs/wan-beta-infer-%j.out
-#SBATCH --error=/home/s2710099/logs/wan-beta-infer-%j.err
+#SBATCH --mem=64G
+#SBATCH --output=/home/s2710099/logs/wan-beta-infer-dual-%j.out
+#SBATCH --error=/home/s2710099/logs/wan-beta-infer-dual-%j.err
 #SBATCH --chdir=/home/s2710099/projects/Video_Anagrams
 
 set -euo pipefail
 
-# Activate conda environment.
-# hpc-node31 is RTX PRO 6000 Blackwell (SM 12.0). flash-attn 2.8.3 imports cleanly
-# but flash_attn_func is None at runtime on SM 12.0, so we use the Blackwell-only
-# env (wan22-bw, no flash-attn) and force native SDPA below.
+# Activate conda environment (interpreter: ~/.conda/envs/wan22/bin/python)
 source $(conda info --base)/etc/profile.d/conda.sh
-conda activate wan22-bw
+conda activate ${WAN22_ENV:-wan22}
 
 # Wan-beta paths — flat top-level convention
 export WAN_BETA_CACHE=${WAN_BETA_CACHE:-$HOME/cache/wan-beta}
@@ -28,8 +24,19 @@ export WAN_BETA_OUT=${WAN_BETA_OUT:-$HOME/outputs/wan-beta}
 export HF_HOME=${HF_HOME:-$HOME/.cache/huggingface}
 export HF_HUB_OFFLINE=1
 
-# Diffusers attention backend — native SDPA on Blackwell (flash-attn not usable on SM 12.0).
-export DIFFUSERS_ATTN_BACKEND="native"
+# Diffusers attention backend. If unset, auto-detect: use flash when flash-attn
+# imports cleanly (A40 / wan22 env), else fall back to native SDPA (Blackwell /
+# wan22-bw env where flash-attn is uninstalled). Without this, an explicit
+# DIFFUSERS_ATTN_BACKEND=flash causes a None-call TypeError when flash-attn is
+# missing, since diffusers' dispatcher doesn't auto-fall-back at runtime.
+if [ -z "${DIFFUSERS_ATTN_BACKEND:-}" ]; then
+    if python -c "import flash_attn" 2>/dev/null; then
+        export DIFFUSERS_ATTN_BACKEND="flash"
+    else
+        export DIFFUSERS_ATTN_BACKEND="native"
+    fi
+fi
+echo "[attn] DIFFUSERS_ATTN_BACKEND=$DIFFUSERS_ATTN_BACKEND"
 export CUBLAS_WORKSPACE_CONFIG=":4096:8"
 
 # Reduce CUDA allocator fragmentation; helps with the two-transformer offload pattern
@@ -46,37 +53,32 @@ echo "[paths] WAN_MODEL=$WAN_MODEL"
 echo "[paths] HED_CONFIG=$HED_CONFIG"
 
 # Tunables — override on the sbatch command line, e.g.:
-#   CHECKPOINT=$HOME/checkpoints/wan-beta/beta-001_step6000.safetensors sbatch slurm/inference_beta.sbatch
-export CHECKPOINT=${CHECKPOINT:-$WAN_BETA_CKPT/beta-001_final.safetensors}
+#   HIGH_CHECKPOINT=$HOME/checkpoints/wan-beta/beta-001_final.safetensors \
+#   LOW_CHECKPOINT=$HOME/checkpoints/wan-beta/beta-003_final.safetensors \
+#   sbatch slurm/inference_beta_dual.sbatch
+export HIGH_CHECKPOINT=${HIGH_CHECKPOINT:-$WAN_BETA_CKPT/beta-001_final.safetensors}
+export LOW_CHECKPOINT=${LOW_CHECKPOINT:-$WAN_BETA_CKPT/beta-003_final.safetensors}
 export FACE_IDX=${FACE_IDX:-0}
 export SLUG=${SLUG:-}                                # blank → use first available for face_idx
-export OUTPUT=${OUTPUT:-$WAN_BETA_OUT/beta-001_infer.mp4}
+export OUTPUT=${OUTPUT:-$WAN_BETA_OUT/beta-dual_infer.mp4}
 export STEPS=${STEPS:-100}
 export GUIDANCE=${GUIDANCE:-5.0}
 export CN_WEIGHT=${CN_WEIGHT:-1.0}
-export WEIGHTS=${WEIGHTS:-}                          # comma-sep sweep, e.g. "1.0,1.5,2.5,4.0"
-export CN_START=${CN_START:-0.0}                     # ControlNet only on high-noise expert
-export CN_END=${CN_END:-0.125}                       # = 1 - boundary_ratio (0.875)
+export WEIGHTS=${WEIGHTS:-}                          # comma-sep sweep, e.g. "1.0,2.5"
+export CN_START=${CN_START:-0.0}
+export CN_END=${CN_END:-1.0}                         # dual-CN: high-CN active early, low-CN late
 export ENDS=${ENDS:-}                                # comma-sep sweep over controlnet_guidance_end,
                                                      # e.g. "0.125,0.5,0.875,1.0".
-                                                     # Combined with WEIGHTS as Cartesian product;
-                                                     # one mp4 per (weight, end) pair.
-export DYNAMIC_CN_END=${DYNAMIC_CN_END:-0}           # 1 → auto-compute cn_end from the sigma
-                                                     # trajectory (mirrors train_beta7). Overrides
-                                                     # CN_END and ENDS. Use this when reproducing
-                                                     # beta-007's exact inference setup.
-export PROMPT_CACHE_PATH=${PROMPT_CACHE_PATH:-}      # .pt file with precomputed positive prompt
-                                                     # embedding (mirrors training-time eval).
-                                                     # Negative is re-encoded fresh at matching
-                                                     # length so both sides line up.
-export PROMPT_EMBED_MAX_LEN=${PROMPT_EMBED_MAX_LEN:-} # pad length for the re-encoded negative.
-                                                     # Beta cache uses 512; pipeline default is 226.
 export SEED=${SEED:-42}
+
+[ -f "$HIGH_CHECKPOINT" ] || { echo "ERROR: HIGH_CHECKPOINT not found: $HIGH_CHECKPOINT" >&2; exit 1; }
+[ -f "$LOW_CHECKPOINT" ]  || { echo "ERROR: LOW_CHECKPOINT not found: $LOW_CHECKPOINT" >&2; exit 1; }
 
 mkdir -p "$(dirname "$OUTPUT")"
 
-CMD=(python -m training.run_inference_beta
-    --checkpoint_path "$CHECKPOINT"
+CMD=(python -m training.run_inference_beta_dual
+    --high_checkpoint "$HIGH_CHECKPOINT"
+    --low_checkpoint "$LOW_CHECKPOINT"
     --base_model_path "$WAN_MODEL"
     --controlnet_config_repo "$HED_CONFIG"
     --cache_dir "$WAN_BETA_CACHE"
@@ -97,15 +99,6 @@ if [ -n "$WEIGHTS" ]; then
 fi
 if [ -n "$ENDS" ]; then
     CMD+=(--ends "$ENDS")
-fi
-if [ "$DYNAMIC_CN_END" = "1" ]; then
-    CMD+=(--dynamic_cn_end)
-fi
-if [ -n "$PROMPT_CACHE_PATH" ]; then
-    CMD+=(--prompt_cache_path "$PROMPT_CACHE_PATH")
-fi
-if [ -n "$PROMPT_EMBED_MAX_LEN" ]; then
-    CMD+=(--prompt_embed_max_len "$PROMPT_EMBED_MAX_LEN")
 fi
 
 "${CMD[@]}"

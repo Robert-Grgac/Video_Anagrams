@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=wan-beta-precompute
 #SBATCH --partition=dmb
-#SBATCH --nodelist=ctit092
+#SBATCH --nodelist=hpc-node31
 #SBATCH --cpus-per-task=8
 #SBATCH --gres=gpu:1
 #SBATCH --time=04:00:00
@@ -13,9 +13,12 @@
 
 set -euo pipefail
 
-# Activate conda environment (interpreter: ~/.conda/envs/wan22/bin/python)
+# Activate conda environment.
+# hpc-node31 is RTX PRO 6000 Blackwell (SM 12.0). flash-attn 2.8.3 imports cleanly
+# but flash_attn_func is None at runtime on SM 12.0, so we use the Blackwell-only
+# env (wan22-bw, no flash-attn) and force native SDPA below.
 source $(conda info --base)/etc/profile.d/conda.sh
-conda activate wan22
+conda activate wan22-bw
 
 # Wan-beta paths — flat top-level convention, one subdir per category
 export WAN_BETA_DATA=${WAN_BETA_DATA:-$HOME/data/wan-beta}
@@ -25,8 +28,8 @@ export WAN_BETA_CACHE=${WAN_BETA_CACHE:-$HOME/cache/wan-beta}
 export HF_HOME=${HF_HOME:-$HOME/.cache/huggingface}
 export HF_HUB_OFFLINE=1
 
-# Diffusers attention backend (flash-attn 2.8.3 is installed for this)
-export DIFFUSERS_ATTN_BACKEND="flash"
+# Diffusers attention backend — native SDPA on Blackwell (flash-attn not usable on SM 12.0).
+export DIFFUSERS_ATTN_BACKEND="native"
 
 # Deterministic-friendly cuBLAS workspace (matches inference scripts)
 export CUBLAS_WORKSPACE_CONFIG=":4096:8"
@@ -46,4 +49,5 @@ python -m training.precompute_beta \
     --targets_dir    $WAN_BETA_DATA/targets \
     --output_dir     $WAN_BETA_CACHE \
     --base_model_path $WAN_MODEL \
-    --height 512 --width 512 --num_frames 9
+    --height 512 --width 512 --num_frames 9 \
+    --max_seq_len 226

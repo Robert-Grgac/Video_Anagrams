@@ -7,3 +7,5 @@ safetensors==0.7.0
 huggingface_hub==0.36.0
 wandb==0.25.1
 tqdm==4.67.1
+ema-pytorch==0.7.7
+pytorch-msssim==1.0.0

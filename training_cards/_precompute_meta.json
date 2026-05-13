@@ -1,0 +1,6 @@
+{
+  "smoke_latent_roundtrip_mse": 0.003645382821559906,
+  "cache_disk_gb": 3.92,
+  "pair_count": 10000,
+  "timestamp": 1778541297.67128
+}

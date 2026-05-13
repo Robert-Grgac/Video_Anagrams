@@ -1,14 +1,15 @@
 #!/bin/bash
-#SBATCH --job-name=wan-beta-smoke
+#SBATCH --job-name=wan-beta-train
 #SBATCH --partition=dmb
 #SBATCH --nodelist=ctit092
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1
-#SBATCH --time=00:30:00
-#SBATCH --mem=32G
-#SBATCH --output=/home/s2710099/logs/wan-beta-smoke-%j.out
-#SBATCH --error=/home/s2710099/logs/wan-beta-smoke-%j.err
+#SBATCH --time=24:00:00
+#SBATCH --mem=64G
+#SBATCH --output=/home/s2710099/logs/wan-beta-train-%j.out
+#SBATCH --error=/home/s2710099/logs/wan-beta-train-%j.err
 #SBATCH --chdir=/home/s2710099/projects/Video_Anagrams
+
 
 set -euo pipefail
 
@@ -17,7 +18,6 @@ source $(conda info --base)/etc/profile.d/conda.sh
 conda activate wan22
 
 # Wan-beta paths — flat top-level convention, one subdir per category
-export WAN_BETA_DATA=${WAN_BETA_DATA:-$HOME/data/wan-beta}
 export WAN_BETA_CACHE=${WAN_BETA_CACHE:-$HOME/cache/wan-beta}
 export WAN_BETA_CKPT=${WAN_BETA_CKPT:-$HOME/checkpoints/wan-beta}
 export WAN_BETA_OUT=${WAN_BETA_OUT:-$HOME/outputs/wan-beta}
@@ -45,22 +45,29 @@ export HED_CONFIG=${HED_CONFIG:-$(ls -d $HED_CACHE/snapshots/*/ 2>/dev/null | he
 echo "[paths] WAN_MODEL=$WAN_MODEL"
 echo "[paths] HED_CONFIG=$HED_CONFIG"
 
-# Local fast storage for wandb (smoke runs offline by default)
+# Local fast storage for wandb + service stability fixes
 export TMPDIR=/tmp/$USER
 mkdir -p $TMPDIR
 export WANDB_DIR=$TMPDIR/wandb
 mkdir -p $WANDB_DIR
 export WANDB__REQUIRE_SERVICE=false
 export WANDB__SERVICE_WAIT=600
-export WANDB_MODE=${WANDB_MODE:-offline}
+export WANDB_MODE=${WANDB_MODE:-online}
 rm -rf /tmp/wandb-service-* 2>/dev/null || true
 
-mkdir -p $WAN_BETA_CACHE
+# Make sure output dirs exist (training script writes here)
+mkdir -p $WAN_BETA_CKPT $WAN_BETA_OUT
 
-python -m training.smoke_test_beta \
+python -m training.beta001.train \
+    --cache_dir       $WAN_BETA_CACHE \
     --base_model_path $WAN_MODEL \
     --controlnet_config_repo $HED_CONFIG \
-    --input_faces_dir $WAN_BETA_DATA/input_faces \
-    --targets_dir $WAN_BETA_DATA/targets \
-    --cache_dir $WAN_BETA_CACHE \
-    --card_run_id beta-001
+    --output_dir      $WAN_BETA_CKPT \
+    --inference_output_dir $WAN_BETA_OUT \
+    --card_path       training_cards/beta001/beta-001.md \
+    --wandb_project   wan-controlnet-beta \
+    --run_name        beta-001 \
+    --num_frames 9 --height 512 --width 512 \
+    --lr 1e-4 --weight_decay 0.01 --grad_clip 1.0 \
+    --num_epochs 1 \
+    --checkpoint_every 2000
