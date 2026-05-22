@@ -1,9 +1,24 @@
-"""BETA7 training: cold-start WanControlnet on the HIGH-noise expert with
-Accelerate-driven gradient accumulation, train/eval split, and periodic
-inference-MSE evaluation.
+"""BETA8 training: beta-007_silhouette recipe + D1 spatial face-weighted FM loss.
 
-Sibling of ``train_beta5.py`` (also high-noise). Three deliberate
-deviations from train_beta6 (which beta-007 was specced from):
+Same single-expert cold-start setup as ``training/beta007/train.py``; the only
+substantive change is the supervised reconstruction loss. The FM MSE is now
+weighted per-latent-position by ``1 + α · mask``, where ``mask`` is the
+silhouette of the target face downsampled to latent resolution. The
+self-distillation consistency term remains uniform (unweighted) — its job is
+to regularize live↔EMA agreement on the prediction itself, independent of
+where the face sits in the frame.
+
+Background: beta-007 ablations across canny / silhouette / raw-face inputs
+all produced final SSIM within Δ0.03 of each other, and the CN-on vs CN-off
+diagnostic on beta-007_v2 showed the CN *was* participating (different output
+for the same seed) but not producing face structure. The interpretation is
+that the FM loss gradient is dominated by the ~98% of latent positions that
+sit outside the face region, where the prompt alone reconstructs the target
+cheaply. Spatial weighting tilts the gradient so face-region accuracy
+contributes a larger share, forcing the CN to do useful work in those
+positions.
+
+Three deliberate deviations from train_beta6 (which beta-007 was specced from):
 
 1. **Gradient accumulation via Accelerate** — uses
    ``accelerator.accumulate(controlnet)`` + ``accelerator.backward(loss)``
@@ -141,6 +156,22 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--use_self_distillation", action="store_true",
                    help="Add lambda_consistency * MSE(v_pred_live, v_pred_ema) to the FM loss.")
     p.add_argument("--lambda_consistency", type=float, default=0.5)
+
+    # D1 — spatial face-weighted FM loss.
+    p.add_argument("--face_weight_alpha", type=float, default=2.0,
+                   help="Per-latent-position FM-loss weight = 1 + α · mask, where "
+                        "mask in [0,1] is the per-face silhouette downsampled to "
+                        "latent resolution. α=0 disables D1 (uniform FM loss, "
+                        "equivalent to beta-007). The self-distillation "
+                        "consistency term is NOT weighted by this mask.")
+    p.add_argument("--face_mask_subdir", type=str, default="silhouette",
+                   help="Cache subdir to load per-face binary masks from for the "
+                        "D1 spatial weighting. The (3, H, W) uint8 silhouette "
+                        "produced by training/precompute_silhouette.py is "
+                        "thresholded to a {0,1} mask and avg-pooled by H/H_lat "
+                        "to latent resolution. Independent of --control_subdir; "
+                        "you can train with canny as the CN input and still mask "
+                        "the loss by the silhouette.")
 
     p.add_argument("--num_train_timesteps_for_sampling", type=int, default=1000)
     p.add_argument("--boundary_ratio_override", type=float, default=None)
@@ -379,8 +410,8 @@ def main() -> None:
         _RESULTS_PATH = _CARD_PATH.parent / f"{_CARD_PATH.stem}_results.json"
         _EVAL_LOG_PATH = _CARD_PATH.parent / f"{_CARD_PATH.stem}_eval.json"
     else:
-        _RESULTS_PATH = Path("training_cards") / "beta007" / f"{cfg.run_name}_results.json"
-        _EVAL_LOG_PATH = Path("training_cards") / "beta007" / f"{cfg.run_name}_eval.json"
+        _RESULTS_PATH = Path("training_cards") / "beta008" / f"{cfg.run_name}_results.json"
+        _EVAL_LOG_PATH = Path("training_cards") / "beta008" / f"{cfg.run_name}_eval.json"
 
     init_mode = "cold"
     effective_batch = cfg.micro_batch_size * cfg.gradient_accumulation_steps
@@ -402,6 +433,8 @@ def main() -> None:
         "controlnet_stride": cfg.controlnet_stride,
         "use_self_distillation": cfg.use_self_distillation,
         "lambda_consistency": cfg.lambda_consistency if cfg.use_self_distillation else None,
+        "face_weight_alpha": cfg.face_weight_alpha,
+        "face_mask_subdir": cfg.face_mask_subdir,
         "eval_size": cfg.eval_size,
         "periodic_eval_size": cfg.periodic_eval_size,
         "periodic_eval_every": cfg.periodic_eval_every,
@@ -551,6 +584,49 @@ def main() -> None:
     _RESULTS_STATE["pair_count"] = n_train
     _RESULTS_STATE["eval_count"] = len(eval_indices)
     _RESULTS_STATE["periodic_eval_count"] = len(periodic_indices)
+
+    # --- D1: pre-load per-face spatial loss-weight masks at latent resolution ---
+    # The Wan VAE spatially compresses 8×, so a 512×512 input maps to 64×64 latent
+    # positions. We threshold the silhouette to a binary {0,1} mask (face interior
+    # + contour lines vs. background), then avg-pool by H//H_lat to get soft values
+    # in [0,1] at latent resolution. Pooled values capture partial coverage on the
+    # silhouette boundary, avoiding the hard-edge aliasing of a thresholded
+    # downsample. Cached per unique face_idx; lookup at micro-batch time is a dict
+    # hit, no I/O in the training hot path.
+    mask_dir = Path(cfg.cache_dir) / cfg.face_mask_subdir
+    if not mask_dir.exists():
+        raise FileNotFoundError(
+            f"--face_mask_subdir='{cfg.face_mask_subdir}' resolves to {mask_dir}, "
+            f"which does not exist. Run precompute_silhouette.py first."
+        )
+    spatial_factor = cfg.height // (cfg.height // 8)  # = 8 for the Wan VAE
+    h_lat = cfg.height // spatial_factor
+    w_lat = cfg.width // spatial_factor
+    unique_face_idxs = sorted({r["face_idx"] for r in full_dataset.records})
+    face_masks_latent: dict[int, torch.Tensor] = {}
+    for fi in unique_face_idxs:
+        mask_path = mask_dir / f"face_{fi}.pt"
+        if not mask_path.exists():
+            raise FileNotFoundError(
+                f"D1 mask missing for face_idx={fi}: expected {mask_path}"
+            )
+        raw = torch.load(mask_path, map_location="cpu",
+                         weights_only=True)  # (3, H, W) uint8
+        # Silhouette uses values {0, fill, line}; anything > 0 is "inside face".
+        m_bin = (raw[0] > 0).float()  # (H, W) in {0, 1}
+        m_lat = F.avg_pool2d(
+            m_bin.unsqueeze(0).unsqueeze(0),
+            kernel_size=spatial_factor, stride=spatial_factor,
+        ).squeeze(0).squeeze(0)  # (h_lat, w_lat) in [0, 1]
+        face_masks_latent[int(fi)] = m_lat.contiguous()
+    coverage_mean = float(
+        torch.stack(list(face_masks_latent.values())).mean().item()
+    )
+    print(f"[d1] cached {len(face_masks_latent)} face masks from {mask_dir} "
+          f"at {h_lat}x{w_lat}; mean face coverage="
+          f"{coverage_mean:.3f}; α={cfg.face_weight_alpha}")
+    _RESULTS_STATE["face_mask_coverage_mean"] = round(coverage_mean, 4)
+    _RESULTS_STATE["face_mask_latent_hw"] = [h_lat, w_lat]
 
     train_loader = DataLoader(
         train_dataset, batch_size=cfg.micro_batch_size, shuffle=True,
@@ -803,8 +879,20 @@ def main() -> None:
                     return_dict=False,
                 )[0]
 
-                loss_fm = F.mse_loss(v_pred.float(), v_target)
+                # D1: spatial face-weighted FM loss. v_pred shape is
+                # (B, C, T_lat, H_lat, W_lat); the per-face mask is
+                # (H_lat, W_lat) and broadcasts over C and T_lat.
+                face_idxs_b = batch["face_idx"]
+                masks_b = torch.stack(
+                    [face_masks_latent[int(fi)] for fi in face_idxs_b], dim=0,
+                ).to(v_pred.device, dtype=torch.float32)  # (B, H_lat, W_lat)
+                masks_b = masks_b.unsqueeze(1).unsqueeze(1)  # (B, 1, 1, H_lat, W_lat)
+                weight_map = 1.0 + cfg.face_weight_alpha * masks_b
+                diff2 = (v_pred.float() - v_target) ** 2
+                loss_fm = (weight_map * diff2).mean()
                 if cfg.use_self_distillation and v_pred_ema is not None:
+                    # Consistency stays uniform — it regularizes live↔EMA
+                    # agreement on the prediction itself, not on target fitting.
                     loss_consistency = F.mse_loss(v_pred.float(), v_pred_ema)
                     loss = loss_fm + cfg.lambda_consistency * loss_consistency
                 else:

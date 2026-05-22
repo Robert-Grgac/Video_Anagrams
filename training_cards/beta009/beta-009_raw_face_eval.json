@@ -1,0 +1,3746 @@
+{
+  "periodic": [
+    {
+      "global_step": 10,
+      "avg_mse": 0.12340690270066261,
+      "avg_ssim": 0.1748091995716095,
+      "wall_s": 355.6,
+      "samples": [
+        {
+          "global_step": 10,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.12749996781349182,
+          "ssim": 0.22021304070949554,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00010_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 10,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.09741412103176117,
+          "ssim": 0.1999296396970749,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00010_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 10,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.10197261720895767,
+          "ssim": 0.22290822863578796,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00010_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 10,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.1278803050518036,
+          "ssim": 0.17777429521083832,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00010_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 10,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.16517451405525208,
+          "ssim": 0.09257425367832184,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00010_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 10,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.11579132825136185,
+          "ssim": 0.15164758265018463,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00010_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 10,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.09501609951257706,
+          "ssim": 0.22580210864543915,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00010_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 10,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.12671531736850739,
+          "ssim": 0.17811830341815948,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00010_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 10,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.1350516974925995,
+          "ssim": 0.1303505003452301,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00010_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 10,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.14155305922031403,
+          "ssim": 0.14877404272556305,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00010_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 20,
+      "avg_mse": 0.1066104918718338,
+      "avg_ssim": 0.16530178263783454,
+      "wall_s": 351.9,
+      "samples": [
+        {
+          "global_step": 20,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.12867261469364166,
+          "ssim": 0.20183277130126953,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00020_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 20,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.0731622725725174,
+          "ssim": 0.2080715000629425,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00020_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 20,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.08685726672410965,
+          "ssim": 0.21319633722305298,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00020_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 20,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.12762857973575592,
+          "ssim": 0.13743095099925995,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00020_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 20,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.13054245710372925,
+          "ssim": 0.10091178864240646,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00020_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 20,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.11152750253677368,
+          "ssim": 0.1391705572605133,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00020_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 20,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.08838646858930588,
+          "ssim": 0.2095717340707779,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00020_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 20,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.09960206598043442,
+          "ssim": 0.15125438570976257,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00020_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 20,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.1049797534942627,
+          "ssim": 0.1517687737941742,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00020_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 20,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.11474593728780746,
+          "ssim": 0.1398090273141861,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00020_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 30,
+      "avg_mse": 0.10137904807925224,
+      "avg_ssim": 0.15509623661637306,
+      "wall_s": 350.7,
+      "samples": [
+        {
+          "global_step": 30,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.11282486468553543,
+          "ssim": 0.17208562791347504,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00030_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 30,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.06544635444879532,
+          "ssim": 0.19872018694877625,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00030_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 30,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.08584243804216385,
+          "ssim": 0.2150902897119522,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00030_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 30,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.12677660584449768,
+          "ssim": 0.1361427903175354,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00030_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 30,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.12256941199302673,
+          "ssim": 0.09376119822263718,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00030_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 30,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.10304194688796997,
+          "ssim": 0.12415887415409088,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00030_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 30,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.08604360371828079,
+          "ssim": 0.19873319566249847,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00030_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 30,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.09282166510820389,
+          "ssim": 0.148185133934021,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00030_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 30,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.1056104227900505,
+          "ssim": 0.13681967556476593,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00030_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 30,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.11281316727399826,
+          "ssim": 0.12726539373397827,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00030_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 40,
+      "avg_mse": 0.10591577962040902,
+      "avg_ssim": 0.14487867057323456,
+      "wall_s": 347.4,
+      "samples": [
+        {
+          "global_step": 40,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.10450441390275955,
+          "ssim": 0.1951397806406021,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00040_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 40,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.07294337451457977,
+          "ssim": 0.1765257865190506,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00040_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 40,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.0970212072134018,
+          "ssim": 0.1808120608329773,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00040_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 40,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.13790014386177063,
+          "ssim": 0.1252623200416565,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00040_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 40,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.12655003368854523,
+          "ssim": 0.08814743161201477,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00040_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 40,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.1035679504275322,
+          "ssim": 0.12035389244556427,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00040_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 40,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.0966847836971283,
+          "ssim": 0.16523459553718567,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00040_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 40,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.09798208624124527,
+          "ssim": 0.13458086550235748,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00040_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 40,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.10375236719846725,
+          "ssim": 0.13756930828094482,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00040_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 40,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.11825143545866013,
+          "ssim": 0.12516066431999207,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00040_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 50,
+      "avg_mse": 0.10234722569584846,
+      "avg_ssim": 0.15434449464082717,
+      "wall_s": 346.7,
+      "samples": [
+        {
+          "global_step": 50,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.09417591243982315,
+          "ssim": 0.2102881669998169,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00050_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 50,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.07148580998182297,
+          "ssim": 0.18185311555862427,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00050_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 50,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.09029299020767212,
+          "ssim": 0.19344721734523773,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00050_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 50,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.13643939793109894,
+          "ssim": 0.13729813694953918,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00050_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 50,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.12221027165651321,
+          "ssim": 0.09301592409610748,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00050_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 50,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.09674812108278275,
+          "ssim": 0.12671995162963867,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00050_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 50,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.0879967212677002,
+          "ssim": 0.18302857875823975,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00050_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 50,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.09953851252794266,
+          "ssim": 0.1422400176525116,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00050_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 50,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.10485266894102097,
+          "ssim": 0.14378836750984192,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00050_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 50,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.1197318509221077,
+          "ssim": 0.1317654699087143,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00050_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 60,
+      "avg_mse": 0.10066579729318618,
+      "avg_ssim": 0.15849749520421028,
+      "wall_s": 341.1,
+      "samples": [
+        {
+          "global_step": 60,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.10631247609853745,
+          "ssim": 0.18066218495368958,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00060_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 60,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.07769183069467545,
+          "ssim": 0.1809721291065216,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00060_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 60,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.09888084977865219,
+          "ssim": 0.1879901885986328,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00060_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 60,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.1213637962937355,
+          "ssim": 0.14588075876235962,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00060_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 60,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.1254972219467163,
+          "ssim": 0.0992569550871849,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00060_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 60,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.08926664292812347,
+          "ssim": 0.1410713493824005,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00060_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 60,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.07871376723051071,
+          "ssim": 0.20350109040737152,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00060_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 60,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.09119462221860886,
+          "ssim": 0.1592409759759903,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00060_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 60,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.10633934289216995,
+          "ssim": 0.14485974609851837,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00060_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 60,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.11139742285013199,
+          "ssim": 0.1415395736694336,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00060_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 70,
+      "avg_mse": 0.09605942294001579,
+      "avg_ssim": 0.1609051562845707,
+      "wall_s": 375.8,
+      "samples": [
+        {
+          "global_step": 70,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.09695536643266678,
+          "ssim": 0.20547287166118622,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00070_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 70,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.06852686405181885,
+          "ssim": 0.1947045922279358,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00070_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 70,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.09012269228696823,
+          "ssim": 0.19397123157978058,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00070_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 70,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.1262742429971695,
+          "ssim": 0.14894065260887146,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00070_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 70,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.11774826794862747,
+          "ssim": 0.0963221862912178,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00070_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 70,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.09336547553539276,
+          "ssim": 0.1324881613254547,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00070_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 70,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.07581879198551178,
+          "ssim": 0.199308842420578,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00070_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 70,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.08665156364440918,
+          "ssim": 0.1575741469860077,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00070_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 70,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.09821882843971252,
+          "ssim": 0.14203408360481262,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00070_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 70,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.10691213607788086,
+          "ssim": 0.13823479413986206,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00070_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 80,
+      "avg_mse": 0.09687952399253845,
+      "avg_ssim": 0.16449551805853843,
+      "wall_s": 345.7,
+      "samples": [
+        {
+          "global_step": 80,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.09259790927171707,
+          "ssim": 0.22905415296554565,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00080_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 80,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.07309643924236298,
+          "ssim": 0.18967533111572266,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00080_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 80,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.08734381943941116,
+          "ssim": 0.20176132023334503,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00080_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 80,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.12455529719591141,
+          "ssim": 0.14738331735134125,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00080_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 80,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.1233009323477745,
+          "ssim": 0.09342897683382034,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00080_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 80,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.08799666911363602,
+          "ssim": 0.13673722743988037,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00080_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 80,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.08055409789085388,
+          "ssim": 0.20254497230052948,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00080_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 80,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.08757530897855759,
+          "ssim": 0.15997812151908875,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00080_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 80,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.102081298828125,
+          "ssim": 0.1411299705505371,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00080_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 80,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.10969346761703491,
+          "ssim": 0.14326179027557373,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00080_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 90,
+      "avg_mse": 0.09970503002405166,
+      "avg_ssim": 0.16508694589138032,
+      "wall_s": 350.3,
+      "samples": [
+        {
+          "global_step": 90,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.10127411037683487,
+          "ssim": 0.2120952308177948,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00090_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 90,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.0699630007147789,
+          "ssim": 0.20271873474121094,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00090_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 90,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.09626895934343338,
+          "ssim": 0.19303494691848755,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00090_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 90,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.12474212050437927,
+          "ssim": 0.14094726741313934,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00090_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 90,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.14034171402454376,
+          "ssim": 0.08559279143810272,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00090_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 90,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.09081077575683594,
+          "ssim": 0.14729256927967072,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00090_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 90,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.08496099710464478,
+          "ssim": 0.2217690497636795,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00090_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 90,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.08799982815980911,
+          "ssim": 0.1563757210969925,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00090_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 90,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.08944126218557358,
+          "ssim": 0.1506279706954956,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00090_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 90,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.11124753206968307,
+          "ssim": 0.14041517674922943,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00090_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 100,
+      "avg_mse": 0.10100155919790268,
+      "avg_ssim": 0.1666286863386631,
+      "wall_s": 339.8,
+      "samples": [
+        {
+          "global_step": 100,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.0999140739440918,
+          "ssim": 0.2088642120361328,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00100_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 100,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.07124969363212585,
+          "ssim": 0.19709569215774536,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00100_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 100,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.09729976952075958,
+          "ssim": 0.19725719094276428,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00100_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 100,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.12105692923069,
+          "ssim": 0.14561422169208527,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00100_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 100,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.1358875185251236,
+          "ssim": 0.10425465553998947,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00100_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 100,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.09610961377620697,
+          "ssim": 0.13790114223957062,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00100_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 100,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.08818524330854416,
+          "ssim": 0.21811118721961975,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00100_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 100,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.09385894984006882,
+          "ssim": 0.15502764284610748,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00100_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 100,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.09762103110551834,
+          "ssim": 0.1485273391008377,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00100_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 100,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.10883276909589767,
+          "ssim": 0.15363357961177826,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00100_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 110,
+      "avg_mse": 0.10235576629638672,
+      "avg_ssim": 0.16240359023213385,
+      "wall_s": 339.5,
+      "samples": [
+        {
+          "global_step": 110,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.10245391726493835,
+          "ssim": 0.20260970294475555,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00110_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 110,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.07730985432863235,
+          "ssim": 0.18230415880680084,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00110_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 110,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.09892338514328003,
+          "ssim": 0.1996328979730606,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00110_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 110,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.12321281433105469,
+          "ssim": 0.14523185789585114,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00110_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 110,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.1387006938457489,
+          "ssim": 0.10409370809793472,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00110_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 110,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.10007628798484802,
+          "ssim": 0.13694782555103302,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00110_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 110,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.09159374237060547,
+          "ssim": 0.20504815876483917,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00110_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 110,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.0932193323969841,
+          "ssim": 0.14851224422454834,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00110_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 110,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.08938094973564148,
+          "ssim": 0.14617174863815308,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00110_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 110,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.10868668556213379,
+          "ssim": 0.15348359942436218,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00110_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 120,
+      "avg_mse": 0.10263876989483833,
+      "avg_ssim": 0.16668272167444229,
+      "wall_s": 341.0,
+      "samples": [
+        {
+          "global_step": 120,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.12106045335531235,
+          "ssim": 0.22387723624706268,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00120_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 120,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.07578001171350479,
+          "ssim": 0.18494653701782227,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00120_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 120,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.09601768106222153,
+          "ssim": 0.18590010702610016,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00120_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 120,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.11818943172693253,
+          "ssim": 0.14781710505485535,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00120_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 120,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.14588883519172668,
+          "ssim": 0.10542018711566925,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00120_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 120,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.10536111146211624,
+          "ssim": 0.13831332325935364,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00120_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 120,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.07966678589582443,
+          "ssim": 0.23124034702777863,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00120_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 120,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.08752033114433289,
+          "ssim": 0.1583637148141861,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00120_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 120,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.08558188378810883,
+          "ssim": 0.1502685248851776,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00120_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 120,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.11132117360830307,
+          "ssim": 0.14068013429641724,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00120_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 130,
+      "avg_mse": 0.09877121970057487,
+      "avg_ssim": 0.1660703018307686,
+      "wall_s": 340.6,
+      "samples": [
+        {
+          "global_step": 130,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.10785501450300217,
+          "ssim": 0.19702893495559692,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00130_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 130,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.07019683718681335,
+          "ssim": 0.1869291365146637,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00130_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 130,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.090652696788311,
+          "ssim": 0.2066987007856369,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00130_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 130,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.12137924134731293,
+          "ssim": 0.1489959955215454,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00130_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 130,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.1289536952972412,
+          "ssim": 0.10726460814476013,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00130_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 130,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.0915989875793457,
+          "ssim": 0.14388540387153625,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00130_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 130,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.07963129132986069,
+          "ssim": 0.21879425644874573,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00130_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 130,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.0944264605641365,
+          "ssim": 0.15683968365192413,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00130_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 130,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.09167201071977615,
+          "ssim": 0.14485841989517212,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00130_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 130,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.11134596168994904,
+          "ssim": 0.14940787851810455,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00130_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 140,
+      "avg_mse": 0.09974914193153381,
+      "avg_ssim": 0.16254043728113174,
+      "wall_s": 339.4,
+      "samples": [
+        {
+          "global_step": 140,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.09845675528049469,
+          "ssim": 0.21171167492866516,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00140_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 140,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.08019596338272095,
+          "ssim": 0.17037980258464813,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00140_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 140,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.09254884719848633,
+          "ssim": 0.20608898997306824,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00140_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 140,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.12622837722301483,
+          "ssim": 0.1453160047531128,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00140_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 140,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.12258845567703247,
+          "ssim": 0.11043566465377808,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00140_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 140,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.09436636418104172,
+          "ssim": 0.14079619944095612,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00140_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 140,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.0806703120470047,
+          "ssim": 0.2105407416820526,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00140_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 140,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.09252458065748215,
+          "ssim": 0.15614774823188782,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00140_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 140,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.09956654906272888,
+          "ssim": 0.13561592996120453,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00140_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 140,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.11034521460533142,
+          "ssim": 0.13837161660194397,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00140_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 150,
+      "avg_mse": 0.09913011118769646,
+      "avg_ssim": 0.1668682612478733,
+      "wall_s": 339.6,
+      "samples": [
+        {
+          "global_step": 150,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.114951953291893,
+          "ssim": 0.1944378763437271,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00150_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 150,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.06932825595140457,
+          "ssim": 0.19170169532299042,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00150_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 150,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.08959080278873444,
+          "ssim": 0.20975875854492188,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00150_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 150,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.11032125353813171,
+          "ssim": 0.15662039816379547,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00150_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 150,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.12960149347782135,
+          "ssim": 0.11295922845602036,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00150_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 150,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.09987177699804306,
+          "ssim": 0.14484433829784393,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00150_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 150,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.08921391516923904,
+          "ssim": 0.2141023725271225,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00150_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 150,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.09196528047323227,
+          "ssim": 0.14901167154312134,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00150_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 150,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.09469494968652725,
+          "ssim": 0.14567597210407257,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00150_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 150,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.10176143050193787,
+          "ssim": 0.1495703011751175,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00150_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 160,
+      "avg_mse": 0.112511096149683,
+      "avg_ssim": 0.16524075865745544,
+      "wall_s": 339.2,
+      "samples": [
+        {
+          "global_step": 160,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.13598968088626862,
+          "ssim": 0.19897876679897308,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00160_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 160,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.08133348822593689,
+          "ssim": 0.19034641981124878,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00160_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 160,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.09489711374044418,
+          "ssim": 0.1957852840423584,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00160_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 160,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.11618537455797195,
+          "ssim": 0.16252930462360382,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00160_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 160,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.1606338769197464,
+          "ssim": 0.09906435012817383,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00160_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 160,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.11908731609582901,
+          "ssim": 0.14314039051532745,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00160_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 160,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.09654755890369415,
+          "ssim": 0.21058255434036255,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00160_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 160,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.09888624399900436,
+          "ssim": 0.15661819279193878,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00160_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 160,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.09846535325050354,
+          "ssim": 0.15185149013996124,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00160_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 160,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.12308495491743088,
+          "ssim": 0.1435108333826065,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00160_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 170,
+      "avg_mse": 0.10102643966674804,
+      "avg_ssim": 0.16416580080986024,
+      "wall_s": 339.7,
+      "samples": [
+        {
+          "global_step": 170,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.10643712431192398,
+          "ssim": 0.20594102144241333,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00170_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 170,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.08006404340267181,
+          "ssim": 0.17842519283294678,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00170_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 170,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.09400054812431335,
+          "ssim": 0.20738038420677185,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00170_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 170,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.12338599562644958,
+          "ssim": 0.15244729816913605,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00170_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 170,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.1176380068063736,
+          "ssim": 0.1111774891614914,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00170_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 170,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.09855961799621582,
+          "ssim": 0.14356519281864166,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00170_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 170,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.08571843057870865,
+          "ssim": 0.2181212455034256,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00170_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 170,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.10004425793886185,
+          "ssim": 0.14588670432567596,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00170_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 170,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.09810343384742737,
+          "ssim": 0.13331305980682373,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00170_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 170,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.10631293803453445,
+          "ssim": 0.14540041983127594,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00170_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 180,
+      "avg_mse": 0.10522523298859596,
+      "avg_ssim": 0.1689690060913563,
+      "wall_s": 339.3,
+      "samples": [
+        {
+          "global_step": 180,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.11715967208147049,
+          "ssim": 0.21624505519866943,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00180_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 180,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.07907255738973618,
+          "ssim": 0.19695985317230225,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00180_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 180,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.10373334586620331,
+          "ssim": 0.19676484167575836,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00180_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 180,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.12074409425258636,
+          "ssim": 0.14559756219387054,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00180_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 180,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.13166487216949463,
+          "ssim": 0.11324206739664078,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00180_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 180,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.11065696179866791,
+          "ssim": 0.14462298154830933,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00180_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 180,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.09857314079999924,
+          "ssim": 0.2208724170923233,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00180_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 180,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.0915113016963005,
+          "ssim": 0.1556551605463028,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00180_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 180,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.09578341245651245,
+          "ssim": 0.14498089253902435,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00180_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 180,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.10335297137498856,
+          "ssim": 0.15474922955036163,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00180_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 190,
+      "avg_mse": 0.10383212417364121,
+      "avg_ssim": 0.16691926270723342,
+      "wall_s": 339.6,
+      "samples": [
+        {
+          "global_step": 190,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.10895363241434097,
+          "ssim": 0.21478363871574402,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00190_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 190,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.07827440649271011,
+          "ssim": 0.18694879114627838,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00190_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 190,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.09633837640285492,
+          "ssim": 0.1967739760875702,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00190_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 190,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.11973626166582108,
+          "ssim": 0.1496295928955078,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00190_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 190,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.13471485674381256,
+          "ssim": 0.11260861158370972,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00190_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 190,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.11271332204341888,
+          "ssim": 0.14233174920082092,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00190_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 190,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.10403261333703995,
+          "ssim": 0.2185789942741394,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00190_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 190,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.08732982724905014,
+          "ssim": 0.16216246783733368,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00190_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 190,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.09074531495571136,
+          "ssim": 0.13829661905765533,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00190_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 190,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.10548263043165207,
+          "ssim": 0.14707818627357483,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00190_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 200,
+      "avg_mse": 0.0980022519826889,
+      "avg_ssim": 0.1690703086555004,
+      "wall_s": 339.8,
+      "samples": [
+        {
+          "global_step": 200,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.09038368612527847,
+          "ssim": 0.21657226979732513,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00200_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 200,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.066624715924263,
+          "ssim": 0.19684650003910065,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00200_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 200,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.09231989830732346,
+          "ssim": 0.2074003517627716,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00200_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 200,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.10904507339000702,
+          "ssim": 0.15417052805423737,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00200_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 200,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.12822426855564117,
+          "ssim": 0.11630795150995255,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00200_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 200,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.1091434508562088,
+          "ssim": 0.14156077802181244,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00200_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 200,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.09500155597925186,
+          "ssim": 0.2077699452638626,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00200_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 200,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.09880457818508148,
+          "ssim": 0.14794833958148956,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00200_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 200,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.08644700795412064,
+          "ssim": 0.14293423295021057,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00200_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 200,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.10402828454971313,
+          "ssim": 0.15919218957424164,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00200_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 210,
+      "avg_mse": 0.10404098108410835,
+      "avg_ssim": 0.16524331644177437,
+      "wall_s": 340.2,
+      "samples": [
+        {
+          "global_step": 210,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.10193167626857758,
+          "ssim": 0.20331591367721558,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00210_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 210,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.07381415367126465,
+          "ssim": 0.195412740111351,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00210_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 210,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.09047989547252655,
+          "ssim": 0.20609378814697266,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00210_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 210,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.1224881261587143,
+          "ssim": 0.151838019490242,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00210_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 210,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.15031172335147858,
+          "ssim": 0.09552017599344254,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00210_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 210,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.11447726935148239,
+          "ssim": 0.14599810540676117,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00210_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 210,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.09691189974546432,
+          "ssim": 0.2070080041885376,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00210_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 210,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.09576920419931412,
+          "ssim": 0.1528322398662567,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00210_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 210,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.08520912379026413,
+          "ssim": 0.1418340504169464,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00210_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 210,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.10901673883199692,
+          "ssim": 0.152580127120018,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00210_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 220,
+      "avg_mse": 0.10528264567255974,
+      "avg_ssim": 0.1660517245531082,
+      "wall_s": 341.9,
+      "samples": [
+        {
+          "global_step": 220,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.10349646955728531,
+          "ssim": 0.206285297870636,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00220_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 220,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.07174405455589294,
+          "ssim": 0.18502765893936157,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00220_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 220,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.09700825810432434,
+          "ssim": 0.20159520208835602,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00220_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 220,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.11821926385164261,
+          "ssim": 0.14889799058437347,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00220_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 220,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.14910374581813812,
+          "ssim": 0.11416749656200409,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00220_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 220,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.11385778337717056,
+          "ssim": 0.14997203648090363,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00220_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 220,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.10427306592464447,
+          "ssim": 0.20307837426662445,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00220_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 220,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.09428714215755463,
+          "ssim": 0.14935514330863953,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00220_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 220,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.08817671239376068,
+          "ssim": 0.15147721767425537,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00220_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 220,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.11265996098518372,
+          "ssim": 0.15066082775592804,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00220_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 230,
+      "avg_mse": 0.10660123974084854,
+      "avg_ssim": 0.16487332433462143,
+      "wall_s": 339.2,
+      "samples": [
+        {
+          "global_step": 230,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.10925761610269547,
+          "ssim": 0.1961173266172409,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00230_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 230,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.07190042734146118,
+          "ssim": 0.18732254207134247,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00230_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 230,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.10247543454170227,
+          "ssim": 0.18851806223392487,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00230_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 230,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.11410288512706757,
+          "ssim": 0.1555841565132141,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00230_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 230,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.14501981437206268,
+          "ssim": 0.11888274550437927,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00230_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 230,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.11384869366884232,
+          "ssim": 0.15178869664669037,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00230_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 230,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.10501793771982193,
+          "ssim": 0.210811585187912,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00230_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 230,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.09949838370084763,
+          "ssim": 0.15112417936325073,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00230_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 230,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.08762044459581375,
+          "ssim": 0.14103348553180695,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00230_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 230,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.11727076023817062,
+          "ssim": 0.14755046367645264,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00230_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 240,
+      "avg_mse": 0.10392012745141983,
+      "avg_ssim": 0.16545149832963943,
+      "wall_s": 339.8,
+      "samples": [
+        {
+          "global_step": 240,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.10684248059988022,
+          "ssim": 0.20176512002944946,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00240_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 240,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.06553717702627182,
+          "ssim": 0.19393756985664368,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00240_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 240,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.10196243971586227,
+          "ssim": 0.19510360062122345,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00240_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 240,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.10598432272672653,
+          "ssim": 0.16653035581111908,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00240_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 240,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.1431639939546585,
+          "ssim": 0.10998734831809998,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00240_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 240,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.11586861312389374,
+          "ssim": 0.1468912810087204,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00240_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 240,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.10083062201738358,
+          "ssim": 0.20071911811828613,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00240_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 240,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.08917604386806488,
+          "ssim": 0.14568762481212616,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00240_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 240,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.09439068287611008,
+          "ssim": 0.14045557379722595,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00240_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 240,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.11544489860534668,
+          "ssim": 0.15343739092350006,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00240_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 250,
+      "avg_mse": 0.10172776505351067,
+      "avg_ssim": 0.1713303178548813,
+      "wall_s": 339.5,
+      "samples": [
+        {
+          "global_step": 250,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.10872706770896912,
+          "ssim": 0.21299761533737183,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00250_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 250,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.06712367385625839,
+          "ssim": 0.1951211541891098,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00250_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 250,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.0994962677359581,
+          "ssim": 0.19766414165496826,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00250_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 250,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.11221323162317276,
+          "ssim": 0.1688108593225479,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00250_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 250,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.13477744162082672,
+          "ssim": 0.12255819141864777,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00250_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 250,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.10626006126403809,
+          "ssim": 0.15960319340229034,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00250_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 250,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.09857109934091568,
+          "ssim": 0.203907310962677,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00250_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 250,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.08369769901037216,
+          "ssim": 0.15406769514083862,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00250_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 250,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.093338243663311,
+          "ssim": 0.14872242510318756,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00250_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 250,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.11307286471128464,
+          "ssim": 0.14985059201717377,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00250_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 260,
+      "avg_mse": 0.0993956059217453,
+      "avg_ssim": 0.17297788858413696,
+      "wall_s": 338.7,
+      "samples": [
+        {
+          "global_step": 260,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.09206449240446091,
+          "ssim": 0.21492215991020203,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00260_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 260,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.0669790580868721,
+          "ssim": 0.19342167675495148,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00260_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 260,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.09510193020105362,
+          "ssim": 0.2097649872303009,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00260_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 260,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.10776861757040024,
+          "ssim": 0.16743095219135284,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00260_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 260,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.12633585929870605,
+          "ssim": 0.12862831354141235,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00260_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 260,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.10722506791353226,
+          "ssim": 0.15705914795398712,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00260_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 260,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.09266162663698196,
+          "ssim": 0.2289823591709137,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00260_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 260,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.0931120365858078,
+          "ssim": 0.14271986484527588,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00260_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 260,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.09019098430871964,
+          "ssim": 0.14327609539031982,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00260_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 260,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.12251638621091843,
+          "ssim": 0.1435733288526535,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00260_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 270,
+      "avg_mse": 0.10150204449892045,
+      "avg_ssim": 0.16891678422689438,
+      "wall_s": 339.3,
+      "samples": [
+        {
+          "global_step": 270,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.10143333673477173,
+          "ssim": 0.2094617486000061,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00270_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 270,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.07128600776195526,
+          "ssim": 0.18848495185375214,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00270_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 270,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.0906999260187149,
+          "ssim": 0.21131423115730286,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00270_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 270,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.11394091695547104,
+          "ssim": 0.15922857820987701,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00270_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 270,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.12443176656961441,
+          "ssim": 0.12418961524963379,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00270_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 270,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.10346256196498871,
+          "ssim": 0.15267382562160492,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00270_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 270,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.09609371423721313,
+          "ssim": 0.215202197432518,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00270_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 270,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.09547634422779083,
+          "ssim": 0.1454901546239853,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00270_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 270,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.09360738843679428,
+          "ssim": 0.14255009591579437,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00270_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 270,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.1245884820818901,
+          "ssim": 0.1405724436044693,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00270_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 280,
+      "avg_mse": 0.10014862194657326,
+      "avg_ssim": 0.1630890004336834,
+      "wall_s": 339.6,
+      "samples": [
+        {
+          "global_step": 280,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.09506488591432571,
+          "ssim": 0.21806392073631287,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00280_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 280,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.06961003690958023,
+          "ssim": 0.18485885858535767,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00280_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 280,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.10230693221092224,
+          "ssim": 0.19492101669311523,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00280_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 280,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.1075262501835823,
+          "ssim": 0.16042612493038177,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00280_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 280,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.12921421229839325,
+          "ssim": 0.11159854382276535,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00280_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 280,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.10429145395755768,
+          "ssim": 0.14916642010211945,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00280_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 280,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.09741096198558807,
+          "ssim": 0.20645934343338013,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00280_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 280,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.09235957264900208,
+          "ssim": 0.1278965026140213,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00280_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 280,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.08957017958164215,
+          "ssim": 0.14018188416957855,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00280_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 280,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.11413173377513885,
+          "ssim": 0.13731738924980164,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00280_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 290,
+      "avg_mse": 0.10376377329230309,
+      "avg_ssim": 0.1620431624352932,
+      "wall_s": 340.0,
+      "samples": [
+        {
+          "global_step": 290,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.0986449122428894,
+          "ssim": 0.20124220848083496,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00290_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 290,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.07342706620693207,
+          "ssim": 0.1857527643442154,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00290_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 290,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.10104560106992722,
+          "ssim": 0.19020763039588928,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00290_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 290,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.1051688864827156,
+          "ssim": 0.161455437541008,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00290_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 290,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.13286662101745605,
+          "ssim": 0.1193632259964943,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00290_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 290,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.11558862775564194,
+          "ssim": 0.14299581944942474,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00290_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 290,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.10026006400585175,
+          "ssim": 0.1938921958208084,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00290_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 290,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.0987248495221138,
+          "ssim": 0.13786958158016205,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00290_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 290,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.09536825120449066,
+          "ssim": 0.14144663512706757,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00290_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 290,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.11654285341501236,
+          "ssim": 0.14620612561702728,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00290_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    },
+    {
+      "global_step": 300,
+      "avg_mse": 0.10234421119093895,
+      "avg_ssim": 0.16819721162319184,
+      "wall_s": 339.5,
+      "samples": [
+        {
+          "global_step": 300,
+          "eval_idx": 0,
+          "face_idx": 0,
+          "slug": "misty_morning",
+          "mse": 0.10375194251537323,
+          "ssim": 0.21432848274707794,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00300_sample000_face0_misty_morning.mp4"
+        },
+        {
+          "global_step": 300,
+          "eval_idx": 1,
+          "face_idx": 1,
+          "slug": "misty_swamp",
+          "mse": 0.07062111794948578,
+          "ssim": 0.1896943598985672,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00300_sample001_face1_misty_swamp.mp4"
+        },
+        {
+          "global_step": 300,
+          "eval_idx": 2,
+          "face_idx": 2,
+          "slug": "moonlit_forest",
+          "mse": 0.09406045079231262,
+          "ssim": 0.2160545438528061,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00300_sample002_face2_moonlit_forest.mp4"
+        },
+        {
+          "global_step": 300,
+          "eval_idx": 3,
+          "face_idx": 3,
+          "slug": "moroccan_market",
+          "mse": 0.10249081254005432,
+          "ssim": 0.16880851984024048,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00300_sample003_face3_moroccan_market.mp4"
+        },
+        {
+          "global_step": 300,
+          "eval_idx": 4,
+          "face_idx": 4,
+          "slug": "mountain_stream",
+          "mse": 0.13377276062965393,
+          "ssim": 0.11052823066711426,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00300_sample004_face4_mountain_stream.mp4"
+        },
+        {
+          "global_step": 300,
+          "eval_idx": 5,
+          "face_idx": 5,
+          "slug": "nordic_village",
+          "mse": 0.11407605558633804,
+          "ssim": 0.14662714302539825,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00300_sample005_face5_nordic_village.mp4"
+        },
+        {
+          "global_step": 300,
+          "eval_idx": 6,
+          "face_idx": 6,
+          "slug": "ocean_waves",
+          "mse": 0.09927653521299362,
+          "ssim": 0.20875096321105957,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00300_sample006_face6_ocean_waves.mp4"
+        },
+        {
+          "global_step": 300,
+          "eval_idx": 7,
+          "face_idx": 7,
+          "slug": "old_train_station",
+          "mse": 0.09474234282970428,
+          "ssim": 0.13956569135189056,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00300_sample007_face7_old_train_station.mp4"
+        },
+        {
+          "global_step": 300,
+          "eval_idx": 8,
+          "face_idx": 8,
+          "slug": "overgrown_garden",
+          "mse": 0.09303504973649979,
+          "ssim": 0.1469007134437561,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00300_sample008_face8_overgrown_garden.mp4"
+        },
+        {
+          "global_step": 300,
+          "eval_idx": 9,
+          "face_idx": 9,
+          "slug": "parisian_street",
+          "mse": 0.11761504411697388,
+          "ssim": 0.14071346819400787,
+          "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/periodic/step00300_sample009_face9_parisian_street.mp4"
+        }
+      ]
+    }
+  ],
+  "final": [
+    {
+      "eval_idx": 0,
+      "face_idx": 0,
+      "slug": "abandoned_factory",
+      "mse": 0.11230193078517914,
+      "ssim": 0.10462833940982819,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample000_face0_abandoned_factory.mp4"
+    },
+    {
+      "eval_idx": 1,
+      "face_idx": 10,
+      "slug": "bamboo_forest",
+      "mse": 0.16157113015651703,
+      "ssim": 0.06253011524677277,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample001_face10_bamboo_forest.mp4"
+    },
+    {
+      "eval_idx": 2,
+      "face_idx": 11,
+      "slug": "baobab_tree",
+      "mse": 0.09987937659025192,
+      "ssim": 0.15032687783241272,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample002_face11_baobab_tree.mp4"
+    },
+    {
+      "eval_idx": 3,
+      "face_idx": 12,
+      "slug": "basalt_columns",
+      "mse": 0.09551773965358734,
+      "ssim": 0.15549355745315552,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample003_face12_basalt_columns.mp4"
+    },
+    {
+      "eval_idx": 4,
+      "face_idx": 13,
+      "slug": "beach",
+      "mse": 0.10546061396598816,
+      "ssim": 0.16589827835559845,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample004_face13_beach.mp4"
+    },
+    {
+      "eval_idx": 5,
+      "face_idx": 14,
+      "slug": "calm_lake",
+      "mse": 0.1324913203716278,
+      "ssim": 0.194448783993721,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample005_face14_calm_lake.mp4"
+    },
+    {
+      "eval_idx": 6,
+      "face_idx": 15,
+      "slug": "canyon",
+      "mse": 0.0891880914568901,
+      "ssim": 0.12450121343135834,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample006_face15_canyon.mp4"
+    },
+    {
+      "eval_idx": 7,
+      "face_idx": 16,
+      "slug": "cave_entrance",
+      "mse": 0.0818830356001854,
+      "ssim": 0.21318672597408295,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample007_face16_cave_entrance.mp4"
+    },
+    {
+      "eval_idx": 8,
+      "face_idx": 17,
+      "slug": "cherry_blossom",
+      "mse": 0.1214277371764183,
+      "ssim": 0.10195346176624298,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample008_face17_cherry_blossom.mp4"
+    },
+    {
+      "eval_idx": 9,
+      "face_idx": 18,
+      "slug": "chinese_pagoda",
+      "mse": 0.12088178843259811,
+      "ssim": 0.10044007748365402,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample009_face18_chinese_pagoda.mp4"
+    },
+    {
+      "eval_idx": 10,
+      "face_idx": 19,
+      "slug": "city_street",
+      "mse": 0.13821758329868317,
+      "ssim": 0.08362382650375366,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample010_face19_city_street.mp4"
+    },
+    {
+      "eval_idx": 11,
+      "face_idx": 1,
+      "slug": "african_savanna",
+      "mse": 0.0950620099902153,
+      "ssim": 0.15517587959766388,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample011_face1_african_savanna.mp4"
+    },
+    {
+      "eval_idx": 12,
+      "face_idx": 20,
+      "slug": "coral_reef",
+      "mse": 0.13038991391658783,
+      "ssim": 0.12157026678323746,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample012_face20_coral_reef.mp4"
+    },
+    {
+      "eval_idx": 13,
+      "face_idx": 21,
+      "slug": "cracked_earth",
+      "mse": 0.09819479286670685,
+      "ssim": 0.1196480393409729,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample013_face21_cracked_earth.mp4"
+    },
+    {
+      "eval_idx": 14,
+      "face_idx": 22,
+      "slug": "crystal_cave",
+      "mse": 0.09071854501962662,
+      "ssim": 0.11767607927322388,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample014_face22_crystal_cave.mp4"
+    },
+    {
+      "eval_idx": 15,
+      "face_idx": 23,
+      "slug": "desert",
+      "mse": 0.0931602343916893,
+      "ssim": 0.20676355063915253,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample015_face23_desert.mp4"
+    },
+    {
+      "eval_idx": 16,
+      "face_idx": 24,
+      "slug": "desert_oasis",
+      "mse": 0.07813042402267456,
+      "ssim": 0.22098304331302643,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample016_face24_desert_oasis.mp4"
+    },
+    {
+      "eval_idx": 17,
+      "face_idx": 25,
+      "slug": "english_countryside",
+      "mse": 0.15468904376029968,
+      "ssim": 0.08541243523359299,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample017_face25_english_countryside.mp4"
+    },
+    {
+      "eval_idx": 18,
+      "face_idx": 26,
+      "slug": "fjord",
+      "mse": 0.10399936139583588,
+      "ssim": 0.1740570068359375,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample018_face26_fjord.mp4"
+    },
+    {
+      "eval_idx": 19,
+      "face_idx": 27,
+      "slug": "foggy_valley",
+      "mse": 0.08030292391777039,
+      "ssim": 0.21575914323329926,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample019_face27_foggy_valley.mp4"
+    },
+    {
+      "eval_idx": 20,
+      "face_idx": 28,
+      "slug": "forest",
+      "mse": 0.10358260571956635,
+      "ssim": 0.1329834759235382,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample020_face28_forest.mp4"
+    },
+    {
+      "eval_idx": 21,
+      "face_idx": 29,
+      "slug": "frozen_lake",
+      "mse": 0.10509257763624191,
+      "ssim": 0.18672409653663635,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample021_face29_frozen_lake.mp4"
+    },
+    {
+      "eval_idx": 22,
+      "face_idx": 2,
+      "slug": "alpine_village",
+      "mse": 0.12780696153640747,
+      "ssim": 0.16421091556549072,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample022_face2_alpine_village.mp4"
+    },
+    {
+      "eval_idx": 23,
+      "face_idx": 30,
+      "slug": "geyser",
+      "mse": 0.10409702360630035,
+      "ssim": 0.20092621445655823,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample023_face30_geyser.mp4"
+    },
+    {
+      "eval_idx": 24,
+      "face_idx": 31,
+      "slug": "glacier",
+      "mse": 0.11452547460794449,
+      "ssim": 0.16087506711483002,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample024_face31_glacier.mp4"
+    },
+    {
+      "eval_idx": 25,
+      "face_idx": 32,
+      "slug": "golden_hour_field",
+      "mse": 0.08947951346635818,
+      "ssim": 0.16854120790958405,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample025_face32_golden_hour_field.mp4"
+    },
+    {
+      "eval_idx": 26,
+      "face_idx": 33,
+      "slug": "gothic_cathedral",
+      "mse": 0.13001877069473267,
+      "ssim": 0.0794825404882431,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample026_face33_gothic_cathedral.mp4"
+    },
+    {
+      "eval_idx": 27,
+      "face_idx": 34,
+      "slug": "harbor_dusk",
+      "mse": 0.08787817507982254,
+      "ssim": 0.23821783065795898,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample027_face34_harbor_dusk.mp4"
+    },
+    {
+      "eval_idx": 28,
+      "face_idx": 35,
+      "slug": "high_plateau",
+      "mse": 0.0987975150346756,
+      "ssim": 0.1733112335205078,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample028_face35_high_plateau.mp4"
+    },
+    {
+      "eval_idx": 29,
+      "face_idx": 36,
+      "slug": "hoodoos",
+      "mse": 0.1464310735464096,
+      "ssim": 0.10952481627464294,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample029_face36_hoodoos.mp4"
+    },
+    {
+      "eval_idx": 30,
+      "face_idx": 37,
+      "slug": "hot_springs",
+      "mse": 0.12484618276357651,
+      "ssim": 0.1274312436580658,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample030_face37_hot_springs.mp4"
+    },
+    {
+      "eval_idx": 31,
+      "face_idx": 38,
+      "slug": "iceberg",
+      "mse": 0.10344408452510834,
+      "ssim": 0.19693869352340698,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample031_face38_iceberg.mp4"
+    },
+    {
+      "eval_idx": 32,
+      "face_idx": 39,
+      "slug": "ivy_wall",
+      "mse": 0.10528045892715454,
+      "ssim": 0.12308838963508606,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample032_face39_ivy_wall.mp4"
+    },
+    {
+      "eval_idx": 33,
+      "face_idx": 3,
+      "slug": "ancient_oak",
+      "mse": 0.09472265839576721,
+      "ssim": 0.13961955904960632,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample033_face3_ancient_oak.mp4"
+    },
+    {
+      "eval_idx": 34,
+      "face_idx": 40,
+      "slug": "japanese_temple",
+      "mse": 0.1252865046262741,
+      "ssim": 0.10179079324007034,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample034_face40_japanese_temple.mp4"
+    },
+    {
+      "eval_idx": 35,
+      "face_idx": 41,
+      "slug": "jungle_temple",
+      "mse": 0.1505308747291565,
+      "ssim": 0.0541861318051815,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample035_face41_jungle_temple.mp4"
+    },
+    {
+      "eval_idx": 36,
+      "face_idx": 42,
+      "slug": "lavender_field",
+      "mse": 0.10053794831037521,
+      "ssim": 0.21347321569919586,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample036_face42_lavender_field.mp4"
+    },
+    {
+      "eval_idx": 37,
+      "face_idx": 43,
+      "slug": "lighthouse",
+      "mse": 0.08586850017309189,
+      "ssim": 0.13548097014427185,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample037_face43_lighthouse.mp4"
+    },
+    {
+      "eval_idx": 38,
+      "face_idx": 44,
+      "slug": "lightning_storm",
+      "mse": 0.09861640632152557,
+      "ssim": 0.17398931086063385,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample038_face44_lightning_storm.mp4"
+    },
+    {
+      "eval_idx": 39,
+      "face_idx": 45,
+      "slug": "limestone_cliff",
+      "mse": 0.07643639296293259,
+      "ssim": 0.1680515855550766,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample039_face45_limestone_cliff.mp4"
+    },
+    {
+      "eval_idx": 40,
+      "face_idx": 46,
+      "slug": "mangrove_forest",
+      "mse": 0.13207972049713135,
+      "ssim": 0.05513479933142662,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample040_face46_mangrove_forest.mp4"
+    },
+    {
+      "eval_idx": 41,
+      "face_idx": 47,
+      "slug": "medieval_castle",
+      "mse": 0.11833539605140686,
+      "ssim": 0.11415571719408035,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample041_face47_medieval_castle.mp4"
+    },
+    {
+      "eval_idx": 42,
+      "face_idx": 48,
+      "slug": "mesa",
+      "mse": 0.09226404130458832,
+      "ssim": 0.17274077236652374,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample042_face48_mesa.mp4"
+    },
+    {
+      "eval_idx": 43,
+      "face_idx": 49,
+      "slug": "misty_forest",
+      "mse": 0.09957275539636612,
+      "ssim": 0.13691270351409912,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample043_face49_misty_forest.mp4"
+    },
+    {
+      "eval_idx": 44,
+      "face_idx": 4,
+      "slug": "ancient_ruins",
+      "mse": 0.12365943193435669,
+      "ssim": 0.10478495061397552,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample044_face4_ancient_ruins.mp4"
+    },
+    {
+      "eval_idx": 45,
+      "face_idx": 50,
+      "slug": "misty_morning",
+      "mse": 0.10305093228816986,
+      "ssim": 0.20490002632141113,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample045_face50_misty_morning.mp4"
+    },
+    {
+      "eval_idx": 46,
+      "face_idx": 51,
+      "slug": "misty_swamp",
+      "mse": 0.052659325301647186,
+      "ssim": 0.20366032421588898,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample046_face51_misty_swamp.mp4"
+    },
+    {
+      "eval_idx": 47,
+      "face_idx": 52,
+      "slug": "moonlit_forest",
+      "mse": 0.0624181367456913,
+      "ssim": 0.1261121928691864,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample047_face52_moonlit_forest.mp4"
+    },
+    {
+      "eval_idx": 48,
+      "face_idx": 53,
+      "slug": "moroccan_market",
+      "mse": 0.10744747519493103,
+      "ssim": 0.1224098801612854,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample048_face53_moroccan_market.mp4"
+    },
+    {
+      "eval_idx": 49,
+      "face_idx": 54,
+      "slug": "mountain_stream",
+      "mse": 0.1112198755145073,
+      "ssim": 0.13358886539936066,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample049_face54_mountain_stream.mp4"
+    },
+    {
+      "eval_idx": 50,
+      "face_idx": 55,
+      "slug": "nordic_village",
+      "mse": 0.0823015496134758,
+      "ssim": 0.19593870639801025,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample050_face55_nordic_village.mp4"
+    },
+    {
+      "eval_idx": 51,
+      "face_idx": 56,
+      "slug": "ocean_waves",
+      "mse": 0.12275310605764389,
+      "ssim": 0.16856427490711212,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample051_face56_ocean_waves.mp4"
+    },
+    {
+      "eval_idx": 52,
+      "face_idx": 57,
+      "slug": "old_train_station",
+      "mse": 0.09878744184970856,
+      "ssim": 0.14117534458637238,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample052_face57_old_train_station.mp4"
+    },
+    {
+      "eval_idx": 53,
+      "face_idx": 58,
+      "slug": "overgrown_garden",
+      "mse": 0.07981102913618088,
+      "ssim": 0.0847509354352951,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample053_face58_overgrown_garden.mp4"
+    },
+    {
+      "eval_idx": 54,
+      "face_idx": 59,
+      "slug": "parisian_street",
+      "mse": 0.11632515490055084,
+      "ssim": 0.10087898373603821,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample054_face59_parisian_street.mp4"
+    },
+    {
+      "eval_idx": 55,
+      "face_idx": 5,
+      "slug": "arctic_tundra",
+      "mse": 0.11588955670595169,
+      "ssim": 0.17604570090770721,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample055_face5_arctic_tundra.mp4"
+    },
+    {
+      "eval_idx": 56,
+      "face_idx": 60,
+      "slug": "pine_forest",
+      "mse": 0.08817744255065918,
+      "ssim": 0.1267058104276657,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample056_face60_pine_forest.mp4"
+    },
+    {
+      "eval_idx": 57,
+      "face_idx": 61,
+      "slug": "rainbow_valley",
+      "mse": 0.1066364198923111,
+      "ssim": 0.1554526537656784,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample057_face61_rainbow_valley.mp4"
+    },
+    {
+      "eval_idx": 58,
+      "face_idx": 62,
+      "slug": "rainforest",
+      "mse": 0.11974285542964935,
+      "ssim": 0.09463144093751907,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample058_face62_rainforest.mp4"
+    },
+    {
+      "eval_idx": 59,
+      "face_idx": 63,
+      "slug": "reflection_pond",
+      "mse": 0.11624927818775177,
+      "ssim": 0.09952164441347122,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample059_face63_reflection_pond.mp4"
+    },
+    {
+      "eval_idx": 60,
+      "face_idx": 64,
+      "slug": "rice_terraces",
+      "mse": 0.10655955970287323,
+      "ssim": 0.093150295317173,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample060_face64_rice_terraces.mp4"
+    },
+    {
+      "eval_idx": 61,
+      "face_idx": 65,
+      "slug": "rock_arch",
+      "mse": 0.08716370165348053,
+      "ssim": 0.1771254688501358,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample061_face65_rock_arch.mp4"
+    },
+    {
+      "eval_idx": 62,
+      "face_idx": 66,
+      "slug": "roman_ruins",
+      "mse": 0.09949593245983124,
+      "ssim": 0.11547373235225677,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample062_face66_roman_ruins.mp4"
+    },
+    {
+      "eval_idx": 63,
+      "face_idx": 67,
+      "slug": "rooftop_city",
+      "mse": 0.09260623902082443,
+      "ssim": 0.193307027220726,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample063_face67_rooftop_city.mp4"
+    },
+    {
+      "eval_idx": 64,
+      "face_idx": 68,
+      "slug": "salt_flat",
+      "mse": 0.08582902699708939,
+      "ssim": 0.24272672832012177,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample064_face68_salt_flat.mp4"
+    },
+    {
+      "eval_idx": 65,
+      "face_idx": 69,
+      "slug": "sand_dune",
+      "mse": 0.08246579766273499,
+      "ssim": 0.25885459780693054,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample065_face69_sand_dune.mp4"
+    },
+    {
+      "eval_idx": 66,
+      "face_idx": 6,
+      "slug": "aurora",
+      "mse": 0.11729470640420914,
+      "ssim": 0.2224530726671219,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample066_face6_aurora.mp4"
+    },
+    {
+      "eval_idx": 67,
+      "face_idx": 70,
+      "slug": "sea_cliff",
+      "mse": 0.11486733704805374,
+      "ssim": 0.1777939349412918,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample067_face70_sea_cliff.mp4"
+    },
+    {
+      "eval_idx": 68,
+      "face_idx": 71,
+      "slug": "sea_stacks",
+      "mse": 0.09886086732149124,
+      "ssim": 0.13311205804347992,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample068_face71_sea_stacks.mp4"
+    },
+    {
+      "eval_idx": 69,
+      "face_idx": 72,
+      "slug": "sky",
+      "mse": 0.11989136040210724,
+      "ssim": 0.2632681131362915,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample069_face72_sky.mp4"
+    },
+    {
+      "eval_idx": 70,
+      "face_idx": 73,
+      "slug": "skyline_night",
+      "mse": 0.11812799423933029,
+      "ssim": 0.12680217623710632,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample070_face73_skyline_night.mp4"
+    },
+    {
+      "eval_idx": 71,
+      "face_idx": 74,
+      "slug": "snowy_mountain",
+      "mse": 0.16424866020679474,
+      "ssim": 0.12694589793682098,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample071_face74_snowy_mountain.mp4"
+    },
+    {
+      "eval_idx": 72,
+      "face_idx": 75,
+      "slug": "starry_desert",
+      "mse": 0.154107466340065,
+      "ssim": 0.10330834984779358,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample072_face75_starry_desert.mp4"
+    },
+    {
+      "eval_idx": 73,
+      "face_idx": 76,
+      "slug": "starry_night",
+      "mse": 0.18619781732559204,
+      "ssim": 0.059216488152742386,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample073_face76_starry_night.mp4"
+    },
+    {
+      "eval_idx": 74,
+      "face_idx": 77,
+      "slug": "stone_bridge",
+      "mse": 0.13176557421684265,
+      "ssim": 0.15204496681690216,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample074_face77_stone_bridge.mp4"
+    },
+    {
+      "eval_idx": 75,
+      "face_idx": 78,
+      "slug": "storm_clouds",
+      "mse": 0.08822675794363022,
+      "ssim": 0.22704677283763885,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample075_face78_storm_clouds.mp4"
+    },
+    {
+      "eval_idx": 76,
+      "face_idx": 79,
+      "slug": "stormy_sea",
+      "mse": 0.11448763310909271,
+      "ssim": 0.15681388974189758,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample076_face79_stormy_sea.mp4"
+    },
+    {
+      "eval_idx": 77,
+      "face_idx": 7,
+      "slug": "autumn_forest",
+      "mse": 0.09117811918258667,
+      "ssim": 0.11014340817928314,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample077_face7_autumn_forest.mp4"
+    },
+    {
+      "eval_idx": 78,
+      "face_idx": 80,
+      "slug": "subway_tunnel",
+      "mse": 0.11132563650608063,
+      "ssim": 0.11480820924043655,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample078_face80_subway_tunnel.mp4"
+    },
+    {
+      "eval_idx": 79,
+      "face_idx": 81,
+      "slug": "sunflower_field",
+      "mse": 0.09905554354190826,
+      "ssim": 0.17122656106948853,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample079_face81_sunflower_field.mp4"
+    },
+    {
+      "eval_idx": 80,
+      "face_idx": 82,
+      "slug": "sunrise_mountains",
+      "mse": 0.1431395709514618,
+      "ssim": 0.15604926645755768,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample080_face82_sunrise_mountains.mp4"
+    },
+    {
+      "eval_idx": 81,
+      "face_idx": 83,
+      "slug": "sunset_hills",
+      "mse": 0.09843087196350098,
+      "ssim": 0.15433485805988312,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample081_face83_sunset_hills.mp4"
+    },
+    {
+      "eval_idx": 82,
+      "face_idx": 84,
+      "slug": "tea_plantation",
+      "mse": 0.09762182086706161,
+      "ssim": 0.14320211112499237,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample082_face84_tea_plantation.mp4"
+    },
+    {
+      "eval_idx": 83,
+      "face_idx": 85,
+      "slug": "tornado_plains",
+      "mse": 0.09493173658847809,
+      "ssim": 0.1679072231054306,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample083_face85_tornado_plains.mp4"
+    },
+    {
+      "eval_idx": 84,
+      "face_idx": 86,
+      "slug": "tree_bark",
+      "mse": 0.1525239199399948,
+      "ssim": 0.04100999981164932,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample084_face86_tree_bark.mp4"
+    },
+    {
+      "eval_idx": 85,
+      "face_idx": 87,
+      "slug": "tropical_lagoon",
+      "mse": 0.13670693337917328,
+      "ssim": 0.10245058685541153,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample085_face87_tropical_lagoon.mp4"
+    },
+    {
+      "eval_idx": 86,
+      "face_idx": 88,
+      "slug": "tuscan_village",
+      "mse": 0.09066392481327057,
+      "ssim": 0.17507489025592804,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample086_face88_tuscan_village.mp4"
+    },
+    {
+      "eval_idx": 87,
+      "face_idx": 89,
+      "slug": "twilight_plain",
+      "mse": 0.09352830052375793,
+      "ssim": 0.22650954127311707,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample087_face89_twilight_plain.mp4"
+    },
+    {
+      "eval_idx": 88,
+      "face_idx": 8,
+      "slug": "back_alley",
+      "mse": 0.1414746642112732,
+      "ssim": 0.12087303400039673,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample088_face8_back_alley.mp4"
+    },
+    {
+      "eval_idx": 89,
+      "face_idx": 90,
+      "slug": "venetian_canal",
+      "mse": 0.09205985814332962,
+      "ssim": 0.1304863691329956,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample089_face90_venetian_canal.mp4"
+    },
+    {
+      "eval_idx": 90,
+      "face_idx": 91,
+      "slug": "village_mountains",
+      "mse": 0.08904105424880981,
+      "ssim": 0.17434850335121155,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample090_face91_village_mountains.mp4"
+    },
+    {
+      "eval_idx": 91,
+      "face_idx": 92,
+      "slug": "vineyard",
+      "mse": 0.09952828288078308,
+      "ssim": 0.1200612410902977,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample091_face92_vineyard.mp4"
+    },
+    {
+      "eval_idx": 92,
+      "face_idx": 93,
+      "slug": "volcano",
+      "mse": 0.09797181189060211,
+      "ssim": 0.13158230483531952,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample092_face93_volcano.mp4"
+    },
+    {
+      "eval_idx": 93,
+      "face_idx": 94,
+      "slug": "waterfall",
+      "mse": 0.11072778701782227,
+      "ssim": 0.14939241111278534,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample093_face94_waterfall.mp4"
+    },
+    {
+      "eval_idx": 94,
+      "face_idx": 95,
+      "slug": "weathered_stone",
+      "mse": 0.12569387257099152,
+      "ssim": 0.08499211072921753,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample094_face95_weathered_stone.mp4"
+    },
+    {
+      "eval_idx": 95,
+      "face_idx": 96,
+      "slug": "wheat_field",
+      "mse": 0.09780693799257278,
+      "ssim": 0.23051191866397858,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample095_face96_wheat_field.mp4"
+    },
+    {
+      "eval_idx": 96,
+      "face_idx": 97,
+      "slug": "wildflower_meadow",
+      "mse": 0.07425512373447418,
+      "ssim": 0.11269984394311905,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample096_face97_wildflower_meadow.mp4"
+    },
+    {
+      "eval_idx": 97,
+      "face_idx": 98,
+      "slug": "willow_tree",
+      "mse": 0.12135327607393265,
+      "ssim": 0.09964125603437424,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample097_face98_willow_tree.mp4"
+    },
+    {
+      "eval_idx": 98,
+      "face_idx": 99,
+      "slug": "winter_forest",
+      "mse": 0.13369502127170563,
+      "ssim": 0.1319524347782135,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample098_face99_winter_forest.mp4"
+    },
+    {
+      "eval_idx": 99,
+      "face_idx": 9,
+      "slug": "badlands",
+      "mse": 0.10590769350528717,
+      "ssim": 0.1481599062681198,
+      "mp4": "/home/s2710099/outputs/wan-beta/beta-009_raw_face/final/sample099_face9_badlands.mp4"
+    }
+  ]
+}

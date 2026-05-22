@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=wan-beta7-train
+#SBATCH --job-name=wan-beta8-train
 #SBATCH --partition=dmb
 #SBATCH --nodelist=hpc-node31
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1
 #SBATCH --time=48:00:00
 #SBATCH --mem=96G
-#SBATCH --output=/home/s2710099/logs/wan-beta7-train-%j.out
-#SBATCH --error=/home/s2710099/logs/wan-beta7-train-%j.err
+#SBATCH --output=/home/s2710099/logs/wan-beta8-train-%j.out
+#SBATCH --error=/home/s2710099/logs/wan-beta8-train-%j.err
 #SBATCH --chdir=/home/s2710099/projects/Video_Anagrams
 
 
@@ -58,25 +58,26 @@ rm -rf /tmp/wandb-service-* 2>/dev/null || true
 mkdir -p $WAN_BETA_CKPT $WAN_BETA_OUT
 
 # Per-run knobs. Override on the sbatch command line, e.g.:
-#   RUN_NAME=beta-007_silhouette CONTROL_SUBDIR=silhouette sbatch slurm/beta007/train.sbatch
-#   RUN_NAME=beta-007_raw_face   CONTROL_SUBDIR=raw_face   sbatch slurm/beta007/train.sbatch
+#   RUN_NAME=beta-008 sbatch slurm/beta008/train.sbatch
+#   RUN_NAME=beta-008_alpha5 FACE_WEIGHT_ALPHA=5 sbatch slurm/beta008/train.sbatch
+#   RUN_NAME=beta-008_canny CONTROL_SUBDIR=canny sbatch slurm/beta008/train.sbatch
 #
-# - RUN_NAME       : required; sets checkpoint paths, wandb run name, and
-#                    training_cards/beta007/{RUN_NAME}_*.json. Must be unique.
-# - CONTROL_SUBDIR : which subdir of $WAN_BETA_CACHE to read the (3, H, W) uint8
-#                    control input from. 'canny' (default) reproduces v2; set
-#                    'silhouette' or 'raw_face' for the modality ablations.
-# - NUM_CN_LAYERS  : optional; leave unset to use the HED config default (6 layers,
-#                    matches v2). Set to 12 to reproduce v4.
-# - CN_STRIDE      : CN-residual layer stride. Default 3 (matches v2). Set 1 to pack
-#                    all 6 CN residuals into transformer blocks 0..5 instead of
-#                    spreading them across 0,3,6,9,12,15. NOTE: matching inference
-#                    requires running inference_beta.sbatch with CN_STRIDE set to
-#                    the same value the run was trained with.
-: "${RUN_NAME:?must be set, e.g. RUN_NAME=beta-007_silhouette}"
-export CONTROL_SUBDIR=${CONTROL_SUBDIR:-canny}
+# Defaults reproduce the beta-007_silhouette recipe + D1 with α=2:
+# silhouette as the ControlNet input AND as the spatial loss-weight source.
+# - RUN_NAME           : required; sets checkpoint paths, wandb run name, and
+#                        training_cards/beta008/{RUN_NAME}_*.json. Must be unique.
+# - CONTROL_SUBDIR     : which subdir of $WAN_BETA_CACHE the CN input is read from.
+#                        Default 'silhouette' (matches beta-007_silhouette).
+# - FACE_MASK_SUBDIR   : which subdir of $WAN_BETA_CACHE the D1 mask is read from.
+#                        Default 'silhouette'. Independent of CONTROL_SUBDIR.
+# - FACE_WEIGHT_ALPHA  : α in `weight = 1 + α · mask`. 0 disables D1.
+#                        Default 2.0; face pixels weigh 3× background.
+# - NUM_CN_LAYERS      : optional architecture override; leave unset for HED default (6).
+: "${RUN_NAME:?must be set, e.g. RUN_NAME=beta-008}"
+export CONTROL_SUBDIR=${CONTROL_SUBDIR:-silhouette}
+export FACE_MASK_SUBDIR=${FACE_MASK_SUBDIR:-silhouette}
+export FACE_WEIGHT_ALPHA=${FACE_WEIGHT_ALPHA:-2.0}
 export NUM_CN_LAYERS=${NUM_CN_LAYERS:-}
-export CN_STRIDE=${CN_STRIDE:-3}
 
 EXTRA_ARGS=()
 if [ -n "$NUM_CN_LAYERS" ]; then
@@ -85,12 +86,15 @@ fi
 
 echo "[run] RUN_NAME=$RUN_NAME"
 echo "[run] CONTROL_SUBDIR=$CONTROL_SUBDIR"
+echo "[run] FACE_MASK_SUBDIR=$FACE_MASK_SUBDIR"
+echo "[run] FACE_WEIGHT_ALPHA=$FACE_WEIGHT_ALPHA"
 echo "[run] NUM_CN_LAYERS=${NUM_CN_LAYERS:-(default)}"
-echo "[run] CN_STRIDE=$CN_STRIDE"
 
-python -m training.beta007.train \
+python -m training.beta008.train \
     --cache_dir       $WAN_BETA_CACHE \
     --control_subdir  $CONTROL_SUBDIR \
+    --face_mask_subdir $FACE_MASK_SUBDIR \
+    --face_weight_alpha $FACE_WEIGHT_ALPHA \
     --targets_dir     $WAN_BETA_DATA/targets \
     --base_model_path $WAN_MODEL \
     --controlnet_config_repo $HED_CONFIG \
@@ -104,7 +108,7 @@ python -m training.beta007.train \
     --num_epochs 1 \
     --micro_batch_size 1 \
     --gradient_accumulation_steps 32 \
-    --controlnet_stride $CN_STRIDE \
+    --controlnet_stride 3 \
     --use_self_distillation \
     --lambda_consistency 0.5 \
     --ema_decay 0.99 \

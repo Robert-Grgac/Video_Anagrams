@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=wan-beta-infer
 #SBATCH --partition=dmb
-#SBATCH --nodelist=hpc-node31
+#SBATCH --nodelist=ctit092
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1
 #SBATCH --time=02:00:00
@@ -12,12 +12,10 @@
 
 set -euo pipefail
 
-# Activate conda environment.
-# hpc-node31 is RTX PRO 6000 Blackwell (SM 12.0). flash-attn 2.8.3 imports cleanly
-# but flash_attn_func is None at runtime on SM 12.0, so we use the Blackwell-only
-# env (wan22-bw, no flash-attn) and force native SDPA below.
+# Activate conda environment (interpreter: ~/.conda/envs/wan22/bin/python).
+# ctit092 is an A40 node — flash-attn works, use the regular wan22 env.
 source $(conda info --base)/etc/profile.d/conda.sh
-conda activate wan22-bw
+conda activate wan22
 
 # Wan-beta paths — flat top-level convention
 export WAN_BETA_CACHE=${WAN_BETA_CACHE:-$HOME/cache/wan-beta}
@@ -28,8 +26,8 @@ export WAN_BETA_OUT=${WAN_BETA_OUT:-$HOME/outputs/wan-beta}
 export HF_HOME=${HF_HOME:-$HOME/.cache/huggingface}
 export HF_HUB_OFFLINE=1
 
-# Diffusers attention backend — native SDPA on Blackwell (flash-attn not usable on SM 12.0).
-export DIFFUSERS_ATTN_BACKEND="native"
+# Diffusers attention backend
+export DIFFUSERS_ATTN_BACKEND="flash"
 export CUBLAS_WORKSPACE_CONFIG=":4096:8"
 
 # Reduce CUDA allocator fragmentation; helps with the two-transformer offload pattern
@@ -47,44 +45,66 @@ echo "[paths] HED_CONFIG=$HED_CONFIG"
 
 # Tunables — override on the sbatch command line, e.g.:
 #   CHECKPOINT=$HOME/checkpoints/wan-beta/beta-001_step6000.safetensors sbatch slurm/inference_beta.sbatch
-export CHECKPOINT=${CHECKPOINT:-$WAN_BETA_CKPT/beta-001_final.safetensors}
-export FACE_IDX=${FACE_IDX:-0}
-export SLUG=${SLUG:-}                                # blank → use first available for face_idx
-export OUTPUT=${OUTPUT:-$WAN_BETA_OUT/beta-001_infer.mp4}
+#
+# Defaults below run beta-007_v2 at two weights (0.0 and 1.0) on the same seed,
+# so the two outputs differ only in the CN contribution. WEIGHTS="0.0,1.0"
+# triggers the in-script Cartesian sweep, producing one mp4 per (face, weight)
+# pair with a '_w{weight}' suffix; the seed is shared across the sweep.
+# DYNAMIC_CN_END=1 mirrors how v2 was trained (cn_end_fraction≈0.14).
+export CHECKPOINT=${CHECKPOINT:-$WAN_BETA_CKPT/beta-007_v2_final.safetensors}
+export RUN_TAG=${RUN_TAG:-beta-007_v2_w0_vs_w1}      # used as the output basename
+export FACE_IDXS=${FACE_IDXS:-"0 25 50 75 99"}       # space-separated; one mp4 per face_idx
+export SLUG=${SLUG:-}                                # blank → first manifest slug per face_idx
+export OUTPUT_DIR=${OUTPUT_DIR:-$WAN_BETA_OUT/$RUN_TAG}
 export STEPS=${STEPS:-100}
 export GUIDANCE=${GUIDANCE:-5.0}
-export CN_WEIGHT=${CN_WEIGHT:-1.0}
-export WEIGHTS=${WEIGHTS:-}                          # comma-sep sweep, e.g. "1.0,1.5,2.5,4.0"
+export CN_WEIGHT=${CN_WEIGHT:-1.0}                   # ignored when WEIGHTS is set
+export CN_STRIDE=${CN_STRIDE:-3}                     # CN-residual layer stride. 3 matches how
+                                                     # beta-007_v2 was trained. Setting 1 packs
+                                                     # all 6 CN residuals into the first 6
+                                                     # transformer blocks (OOD vs. training —
+                                                     # the CN's output projections were
+                                                     # calibrated for stride=3 block positions).
+export WEIGHTS=${WEIGHTS:-"0.0,1.0"}                 # comma-sep sweep; default = A/B at same seed
 export CN_START=${CN_START:-0.0}                     # ControlNet only on high-noise expert
-export CN_END=${CN_END:-0.125}                       # = 1 - boundary_ratio (0.875)
+export CN_END=${CN_END:-0.125}                       # = 1 - boundary_ratio (0.875); ignored if DYNAMIC_CN_END=1
 export ENDS=${ENDS:-}                                # comma-sep sweep over controlnet_guidance_end,
                                                      # e.g. "0.125,0.5,0.875,1.0".
                                                      # Combined with WEIGHTS as Cartesian product;
-                                                     # one mp4 per (weight, end) pair.
-export DYNAMIC_CN_END=${DYNAMIC_CN_END:-0}           # 1 → auto-compute cn_end from the sigma
+                                                     # one mp4 per (weight, end) pair (per face).
+export DYNAMIC_CN_END=${DYNAMIC_CN_END:-1}           # 1 → auto-compute cn_end from the sigma
                                                      # trajectory (mirrors train_beta7). Overrides
-                                                     # CN_END and ENDS. Use this when reproducing
-                                                     # beta-007's exact inference setup.
+                                                     # CN_END and ENDS. On by default to match how
+                                                     # beta-007_v3 was trained.
 export PROMPT_CACHE_PATH=${PROMPT_CACHE_PATH:-}      # .pt file with precomputed positive prompt
                                                      # embedding (mirrors training-time eval).
                                                      # Negative is re-encoded fresh at matching
-                                                     # length so both sides line up.
+                                                     # length so both sides line up. Leave unset:
+                                                     # v3 cache and pipeline default both use 226.
 export PROMPT_EMBED_MAX_LEN=${PROMPT_EMBED_MAX_LEN:-} # pad length for the re-encoded negative.
-                                                     # Beta cache uses 512; pipeline default is 226.
+                                                     # Beta cache uses 226 (post bug fix); pipeline default is 226.
 export SEED=${SEED:-42}
 
-mkdir -p "$(dirname "$OUTPUT")"
+mkdir -p "$OUTPUT_DIR"
 
+echo "[run] CHECKPOINT=$CHECKPOINT"
+echo "[run] FACE_IDXS=$FACE_IDXS"
+echo "[run] CN_WEIGHT=$CN_WEIGHT  DYNAMIC_CN_END=$DYNAMIC_CN_END"
+echo "[run] OUTPUT_DIR=$OUTPUT_DIR"
+
+# Single python invocation: pipeline builds ONCE, run_inference_beta loops over
+# all face_idxs internally. Output filenames get a '_face{idx}' suffix.
 CMD=(python -m training.run_inference_beta
     --checkpoint_path "$CHECKPOINT"
     --base_model_path "$WAN_MODEL"
     --controlnet_config_repo "$HED_CONFIG"
     --cache_dir "$WAN_BETA_CACHE"
-    --output_path "$OUTPUT"
-    --face_idx "$FACE_IDX"
+    --output_path "$OUTPUT_DIR/${RUN_TAG}.mp4"
+    --face_idxs "$FACE_IDXS"
     --num_inference_steps "$STEPS"
     --guidance_scale "$GUIDANCE"
     --controlnet_weight "$CN_WEIGHT"
+    --controlnet_stride "$CN_STRIDE"
     --controlnet_guidance_start "$CN_START"
     --controlnet_guidance_end "$CN_END"
     --seed "$SEED"

@@ -1,23 +1,30 @@
 #!/bin/bash
-#SBATCH --job-name=wan-beta7-train
+#SBATCH --job-name=wan-beta9-sil
 #SBATCH --partition=dmb
 #SBATCH --nodelist=hpc-node31
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1
 #SBATCH --time=48:00:00
 #SBATCH --mem=96G
-#SBATCH --output=/home/s2710099/logs/wan-beta7-train-%j.out
-#SBATCH --error=/home/s2710099/logs/wan-beta7-train-%j.err
+#SBATCH --output=/home/s2710099/logs/wan-beta9-sil-%j.out
+#SBATCH --error=/home/s2710099/logs/wan-beta9-sil-%j.err
 #SBATCH --chdir=/home/s2710099/projects/Video_Anagrams
 
+# beta-009 with --face_target_subdir=silhouette: additive face-region loss
+#   loss = MSE(v_pred, v_target) + λ_face·face_region_MSE(v_pred, noise − z_face)
+# where z_face is the VAE-encoded SILHOUETTE drawing (shape only, no identity).
+# Silhouette also stays as the CN input and as the mask source — only the
+# additive-loss target differs from the raw_face variant.
+#
+# Override RUN_NAME / LAMBDA_FACE on the sbatch command line, e.g.:
+#   RUN_NAME=beta-009_silhouette sbatch slurm/beta009/train_silhouette.sbatch
+#   RUN_NAME=beta-009_silhouette_l10 LAMBDA_FACE=10 sbatch slurm/beta009/train_silhouette.sbatch
 
 set -euo pipefail
 
-# Activate conda environment. Blackwell node uses wan22-bw (no flash-attn).
 source $(conda info --base)/etc/profile.d/conda.sh
 conda activate ${WAN22_ENV:-wan22-bw}
 
-# Wan-beta paths
 export WAN_BETA_DATA=${WAN_BETA_DATA:-$HOME/data/wan-beta}
 export WAN_BETA_CACHE=${WAN_BETA_CACHE:-$HOME/cache/wan-beta}
 export WAN_BETA_CKPT=${WAN_BETA_CKPT:-$HOME/checkpoints/wan-beta}
@@ -26,17 +33,15 @@ export WAN_BETA_OUT=${WAN_BETA_OUT:-$HOME/outputs/wan-beta}
 export HF_HOME=${HF_HOME:-$HOME/.cache/huggingface}
 export HF_HUB_OFFLINE=1
 
-# Force NATIVE attention on Blackwell. The wan22-bw env can have flash_attn
-# importable but its CUDA kernels don't load on SM 12.0 → flash_attn_func is
-# None at runtime. Hard-pin native here; the training script also calls
-# set_attention_backend("native") on the loaded models as belt-and-braces.
+# Flush Python stdout/stderr immediately so SLURM .out/.err update in real time.
+export PYTHONUNBUFFERED=1
+
 export DIFFUSERS_ATTN_BACKEND="native"
 export WAN_FORCE_NATIVE_ATTN=1
 echo "[attn] DIFFUSERS_ATTN_BACKEND=$DIFFUSERS_ATTN_BACKEND (forced native for Blackwell)"
 export CUBLAS_WORKSPACE_CONFIG=":4096:8"
 export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 
-# Resolve cached snapshot dirs.
 WAN_CACHE=$HOME/.cache/huggingface/hub/models--Wan-AI--Wan2.2-T2V-A14B-Diffusers
 HED_CACHE=$HOME/.cache/huggingface/hub/models--TheDenk--wan2.2-t2v-a14b-controlnet-hed-v1
 export WAN_MODEL=${WAN_MODEL:-$(ls -d $WAN_CACHE/snapshots/*/ 2>/dev/null | head -1 | sed 's:/$::')}
@@ -57,26 +62,12 @@ rm -rf /tmp/wandb-service-* 2>/dev/null || true
 
 mkdir -p $WAN_BETA_CKPT $WAN_BETA_OUT
 
-# Per-run knobs. Override on the sbatch command line, e.g.:
-#   RUN_NAME=beta-007_silhouette CONTROL_SUBDIR=silhouette sbatch slurm/beta007/train.sbatch
-#   RUN_NAME=beta-007_raw_face   CONTROL_SUBDIR=raw_face   sbatch slurm/beta007/train.sbatch
-#
-# - RUN_NAME       : required; sets checkpoint paths, wandb run name, and
-#                    training_cards/beta007/{RUN_NAME}_*.json. Must be unique.
-# - CONTROL_SUBDIR : which subdir of $WAN_BETA_CACHE to read the (3, H, W) uint8
-#                    control input from. 'canny' (default) reproduces v2; set
-#                    'silhouette' or 'raw_face' for the modality ablations.
-# - NUM_CN_LAYERS  : optional; leave unset to use the HED config default (6 layers,
-#                    matches v2). Set to 12 to reproduce v4.
-# - CN_STRIDE      : CN-residual layer stride. Default 3 (matches v2). Set 1 to pack
-#                    all 6 CN residuals into transformer blocks 0..5 instead of
-#                    spreading them across 0,3,6,9,12,15. NOTE: matching inference
-#                    requires running inference_beta.sbatch with CN_STRIDE set to
-#                    the same value the run was trained with.
-: "${RUN_NAME:?must be set, e.g. RUN_NAME=beta-007_silhouette}"
-export CONTROL_SUBDIR=${CONTROL_SUBDIR:-canny}
+: "${RUN_NAME:?must be set, e.g. RUN_NAME=beta-009_silhouette}"
+export FACE_TARGET_SUBDIR=${FACE_TARGET_SUBDIR:-silhouette}
+export CONTROL_SUBDIR=${CONTROL_SUBDIR:-silhouette}
+export FACE_MASK_SUBDIR=${FACE_MASK_SUBDIR:-silhouette}
+export LAMBDA_FACE=${LAMBDA_FACE:-5.0}
 export NUM_CN_LAYERS=${NUM_CN_LAYERS:-}
-export CN_STRIDE=${CN_STRIDE:-3}
 
 EXTRA_ARGS=()
 if [ -n "$NUM_CN_LAYERS" ]; then
@@ -84,13 +75,17 @@ if [ -n "$NUM_CN_LAYERS" ]; then
 fi
 
 echo "[run] RUN_NAME=$RUN_NAME"
+echo "[run] FACE_TARGET_SUBDIR=$FACE_TARGET_SUBDIR (silhouette drawing VAE-encoded as z_face)"
 echo "[run] CONTROL_SUBDIR=$CONTROL_SUBDIR"
-echo "[run] NUM_CN_LAYERS=${NUM_CN_LAYERS:-(default)}"
-echo "[run] CN_STRIDE=$CN_STRIDE"
+echo "[run] FACE_MASK_SUBDIR=$FACE_MASK_SUBDIR"
+echo "[run] LAMBDA_FACE=$LAMBDA_FACE"
 
-python -m training.beta007.train \
+python -m training.beta009.train \
     --cache_dir       $WAN_BETA_CACHE \
     --control_subdir  $CONTROL_SUBDIR \
+    --face_mask_subdir $FACE_MASK_SUBDIR \
+    --face_target_subdir $FACE_TARGET_SUBDIR \
+    --lambda_face     $LAMBDA_FACE \
     --targets_dir     $WAN_BETA_DATA/targets \
     --base_model_path $WAN_MODEL \
     --controlnet_config_repo $HED_CONFIG \
@@ -104,7 +99,7 @@ python -m training.beta007.train \
     --num_epochs 1 \
     --micro_batch_size 1 \
     --gradient_accumulation_steps 32 \
-    --controlnet_stride $CN_STRIDE \
+    --controlnet_stride 3 \
     --use_self_distillation \
     --lambda_consistency 0.5 \
     --ema_decay 0.99 \

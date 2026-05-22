@@ -39,11 +39,19 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--controlnet_config_repo", type=str, required=True,
                    help="HED config snapshot dir (architecture only).")
     p.add_argument("--cache_dir", type=str, required=True,
-                   help="Wan-beta precompute cache (for canny + slugs).")
+                   help="Wan-beta precompute cache (for control input + slugs).")
+    p.add_argument("--control_subdir", type=str, default="canny",
+                   help="Subdir of cache_dir holding the (3, H, W) uint8 .pt "
+                        "control inputs. Default 'canny' for the original "
+                        "edge cache; set 'silhouette' for the option-H map.")
     p.add_argument("--output_path", type=str, required=True,
                    help="Output mp4 path.")
     p.add_argument("--face_idx", type=int, default=0,
-                   help="Which face's Canny to condition on.")
+                   help="Which face's Canny to condition on. Ignored when --face_idxs is set.")
+    p.add_argument("--face_idxs", type=str, default=None,
+                   help="Comma- or space-separated list of face indices, e.g. '0,25,50,75,99'. "
+                        "When set, the pipeline is built ONCE and one mp4 per face is written; "
+                        "output filenames get a '_face{idx}' suffix. Overrides --face_idx.")
     p.add_argument("--slug", type=str, default=None,
                    help="Slug name from PROMPTS_BATCH_*. If unset, picks the first slug "
                         "available for face_idx in the cache manifest.")
@@ -105,8 +113,9 @@ def resolve_slug(cache_dir: Path, face_idx: int, slug_arg: str | None) -> str:
     raise RuntimeError(f"No manifest entry found for face_idx={face_idx}.")
 
 
-def load_canny_image(cache_dir: Path, face_idx: int) -> Image.Image:
-    canny_path = cache_dir / "canny" / f"face_{face_idx}.pt"
+def load_canny_image(cache_dir: Path, face_idx: int,
+                     control_subdir: str = "canny") -> Image.Image:
+    canny_path = cache_dir / control_subdir / f"face_{face_idx}.pt"
     if not canny_path.exists():
         raise FileNotFoundError(canny_path)
     canny_u8 = torch.load(canny_path, map_location="cpu", weights_only=True)  # (3, H, W) uint8
@@ -223,16 +232,20 @@ def build_pipeline(args: argparse.Namespace) -> "WanTextToVideoControlnetPipelin
     return pipe
 
 
+def parse_face_idxs(args: argparse.Namespace) -> list[int]:
+    if args.face_idxs:
+        # Accept comma- or whitespace-separated.
+        raw = args.face_idxs.replace(",", " ").split()
+        return [int(x) for x in raw if x.strip()]
+    return [args.face_idx]
+
+
 def main() -> int:
     args = parse_args()
     cache_dir = Path(args.cache_dir)
 
-    slug = resolve_slug(cache_dir, args.face_idx, args.slug)
-    prompt_text = ALL_PROMPTS[slug]
-    canny_img = load_canny_image(cache_dir, args.face_idx)
-
-    print(f"[input] face_idx={args.face_idx} slug='{slug}'")
-    print(f"[input] prompt: {prompt_text!r}")
+    face_idxs = parse_face_idxs(args)
+    print(f"[input] face_idxs={face_idxs}")
 
     pipe = build_pipeline(args)
 
@@ -252,10 +265,17 @@ def main() -> int:
         ends = [float(e) for e in args.ends.split(",") if e.strip()]
     else:
         ends = [args.controlnet_guidance_end]
-    sweep_active = bool(args.weights) or bool(args.ends) or args.dynamic_cn_end
-    print(f"[sweep] {len(weights)} weight(s) x {len(ends)} end(s) = "
-          f"{len(weights) * len(ends)} videos")
+    multi_face = len(face_idxs) > 1
+    sweep_active = (bool(args.weights) or bool(args.ends)
+                    or args.dynamic_cn_end or multi_face)
+    print(f"[sweep] {len(face_idxs)} face(s) x {len(weights)} weight(s) x "
+          f"{len(ends)} end(s) = {len(face_idxs) * len(weights) * len(ends)} videos")
 
+    # Prompt-cache mode uses one fixed positive embedding for every face. Warn
+    # if that's mixed with multi-face, because per-face slug auto-resolution
+    # would otherwise imply per-face prompts.
+    pos_emb = None
+    neg_emb = None
     if args.prompt_cache_path:
         pos_emb = torch.load(args.prompt_cache_path, map_location="cpu",
                              weights_only=True).to(torch.bfloat16)
@@ -274,49 +294,69 @@ def main() -> int:
             dtype=torch.bfloat16,
         )
         print(f"[prompt-cache] negative embed shape={tuple(neg_emb.shape)}")
-        prompt_kwargs = dict(prompt_embeds=pos_emb, negative_prompt_embeds=neg_emb)
-    else:
-        prompt_kwargs = dict(prompt=prompt_text, negative_prompt=args.negative_prompt)
+        if multi_face:
+            print(f"[warn] --prompt_cache_path is set AND multiple faces "
+                  f"requested; the same prompt embedding will be used for all "
+                  f"{len(face_idxs)} faces.")
 
     out_path = Path(args.output_path)
     from accelerate.hooks import remove_hook_from_module
-    for w in weights:
-        for e in ends:
-            # Diffusers' model_cpu_offload re-attaches an accelerate hook to the
-            # controlnet at the start of each __call__; its pre_forward then
-            # routes inputs to CPU and we get a CPU/GPU mismatch on the first
-            # Conv3D. Strip the hook and pin the controlnet to GPU before every
-            # iteration of the sweep.
-            remove_hook_from_module(pipe.controlnet, recurse=True)
-            pipe.controlnet.to("cuda")
-            # Reseed so the only varying factors across videos are (weight, end).
-            generator = torch.Generator().manual_seed(args.seed)
-            out = pipe(
-                controlnet_frames=[canny_img] * args.num_frames,
-                **prompt_kwargs,
-                height=args.height,
-                width=args.width,
-                num_frames=args.num_frames,
-                num_inference_steps=args.num_inference_steps,
-                guidance_scale=args.guidance_scale,
-                controlnet_weight=w,
-                controlnet_stride=args.controlnet_stride,
-                controlnet_guidance_start=args.controlnet_guidance_start,
-                controlnet_guidance_end=e,
-                generator=generator,
-                output_type="np",
-            )
-            frames = out.frames[0]  # (T, H, W, 3) float in [0, 1]
-            if not sweep_active:
-                target = out_path
-            else:
-                wstr = f"{w:.2f}".replace(".", "p")
-                estr = f"{e:.3f}".rstrip("0").rstrip(".").replace(".", "p")
-                target = out_path.with_name(
-                    f"{out_path.stem}_w{wstr}_e{estr}{out_path.suffix}"
+    for face_idx in face_idxs:
+        slug = resolve_slug(cache_dir, face_idx, args.slug)
+        canny_img = load_canny_image(cache_dir, face_idx, args.control_subdir)
+
+        if pos_emb is not None:
+            prompt_kwargs = dict(prompt_embeds=pos_emb, negative_prompt_embeds=neg_emb)
+            print(f"[face] face_idx={face_idx} slug='{slug}' (overridden by --prompt_cache_path)")
+        else:
+            prompt_text = ALL_PROMPTS[slug]
+            prompt_kwargs = dict(prompt=prompt_text, negative_prompt=args.negative_prompt)
+            print(f"[face] face_idx={face_idx} slug='{slug}' prompt={prompt_text!r}")
+
+        for w in weights:
+            for e in ends:
+                # Diffusers' model_cpu_offload re-attaches an accelerate hook to the
+                # controlnet at the start of each __call__; its pre_forward then
+                # routes inputs to CPU and we get a CPU/GPU mismatch on the first
+                # Conv3D. Strip the hook and pin the controlnet to GPU before every
+                # iteration of the sweep.
+                remove_hook_from_module(pipe.controlnet, recurse=True)
+                pipe.controlnet.to("cuda")
+                # Reseed so the only varying factors across videos are (face, weight, end).
+                generator = torch.Generator().manual_seed(args.seed)
+                out = pipe(
+                    controlnet_frames=[canny_img] * args.num_frames,
+                    **prompt_kwargs,
+                    height=args.height,
+                    width=args.width,
+                    num_frames=args.num_frames,
+                    num_inference_steps=args.num_inference_steps,
+                    guidance_scale=args.guidance_scale,
+                    controlnet_weight=w,
+                    controlnet_stride=args.controlnet_stride,
+                    controlnet_guidance_start=args.controlnet_guidance_start,
+                    controlnet_guidance_end=e,
+                    generator=generator,
+                    output_type="np",
                 )
-            save_video(frames, target, fps=args.fps)
-            print(f"[done] wrote {target}  (w={w}, end={e})")
+                frames = out.frames[0]  # (T, H, W, 3) float in [0, 1]
+                if not sweep_active:
+                    target = out_path
+                else:
+                    parts = []
+                    if multi_face:
+                        parts.append(f"face{face_idx}")
+                    if bool(args.weights) or len(weights) > 1:
+                        parts.append(f"w{f'{w:.2f}'.replace('.', 'p')}")
+                    if bool(args.ends) or args.dynamic_cn_end or len(ends) > 1:
+                        estr = f"{e:.3f}".rstrip("0").rstrip(".").replace(".", "p")
+                        parts.append(f"e{estr}")
+                    suffix = "_" + "_".join(parts) if parts else ""
+                    target = out_path.with_name(
+                        f"{out_path.stem}{suffix}{out_path.suffix}"
+                    )
+                save_video(frames, target, fps=args.fps)
+                print(f"[done] wrote {target}  (face={face_idx}, w={w}, end={e})")
     return 0
 
 
