@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH --job-name=wan-ptd-cn-infer
 #SBATCH --partition=dmb
-#SBATCH --nodelist=hpc-node09
+#SBATCH --nodelist=hpc-node31
 #SBATCH --cpus-per-task=2
 #SBATCH --gres=gpu:1
 #SBATCH --time=12:00:00
-#SBATCH --mem=32G
+#SBATCH --mem=160G
 #SBATCH --output=/home/s2710099/logs/wan-ptd-cn-infer-%j.out
 #SBATCH --error=/home/s2710099/logs/wan-ptd-cn-infer-%j.err
 #SBATCH --chdir=/home/s2710099/projects/Video_Anagrams
@@ -46,7 +46,7 @@ fi
 # Conda env
 # ============================================================================
 source $(conda info --base)/etc/profile.d/conda.sh
-conda activate wan22
+conda activate wan22-bw
 
 # ============================================================================
 # Resolve source paths on /home (read once during stage-in)
@@ -119,7 +119,8 @@ export WANDB_DIR="$ScratchDir/wandb"
 export WANDB_MODE=${WANDB_MODE:-online}
 
 # Diffusers attention backend
-export DIFFUSERS_ATTN_BACKEND="flash"
+export DIFFUSERS_ATTN_BACKEND="native"
+export WAN_FORCE_NATIVE_ATTN=1
 export CUBLAS_WORKSPACE_CONFIG=":4096:8"
 export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 
@@ -146,8 +147,24 @@ export GUIDANCE_SCALE=${GUIDANCE_SCALE:-5.0}
 export NUM_INFERENCE_STEPS=${NUM_INFERENCE_STEPS:-100}
 export SEED=${SEED:-42}
 
+# Invert source: euler (single .pt per face, Euler ODE precompute) or
+# deterministic (one dir per face with step_*.pt files, linear formula).
+export INVERT_TYPE=${INVERT_TYPE:-euler}
+# Optional cap on (face, slug) pairs. Empty = process all 100. Set to e.g. 10
+# when running the deterministic sanity test (only 10 face dirs exist there).
+export MAX_PAIRS=${MAX_PAIRS:-}
+
+# Optional override of the precompute dir. INVERT_DIR is passed through as-is.
+# If you precomputed to a subdir of WAN_BETA_CACHE on /home (then staged here),
+# set INVERT_SUBDIR=<name> and we'll resolve it against the staged scratch
+# WAN_BETA_CACHE so the read happens on local disk, not /home.
+if [ -n "${INVERT_SUBDIR:-}" ]; then
+    INVERT_DIR="$WAN_BETA_CACHE/$INVERT_SUBDIR"
+fi
+
 echo "[run] PROJECT_NAME=$PROJECT_NAME"
 echo "[run] CN_WEIGHT=$CONTROLNET_WEIGHT  INITIAL_BLENDING_COEFF=$INITIAL_BLENDING_COEFF"
+echo "[run] INVERT_TYPE=$INVERT_TYPE  MAX_PAIRS=${MAX_PAIRS:-<all>}"
 echo "[run] OUTPUT_DIR=$HOME/outputs/inference/$PROJECT_NAME (final mp4s only)"
 
 # ============================================================================
@@ -175,6 +192,9 @@ python -m inference.run_inference \
     --max_blending_coeff_delta "$MAX_BLENDING_COEFF_DELTA" \
     --guidance_scale "$GUIDANCE_SCALE" \
     --num_inference_steps "$NUM_INFERENCE_STEPS" \
-    --seed "$SEED"
+    --seed "$SEED" \
+    --invert_type "$INVERT_TYPE" \
+    ${INVERT_DIR:+--invert_dir "$INVERT_DIR"} \
+    ${MAX_PAIRS:+--max_pairs "$MAX_PAIRS"}
 
 # Cleanup of $ScratchDir is handled by the EXIT trap above.

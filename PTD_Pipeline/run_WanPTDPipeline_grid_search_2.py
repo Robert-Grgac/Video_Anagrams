@@ -13,7 +13,7 @@ print(sys.path)
 print("Importing libraries done...")
 
 #importing pipeline
-from WanPTDiffusion.WanPTDPipeline import WanPTDiffusionPipeline
+from PTD_Pipeline.WanPTDPipeline import WanPTDiffusionPipeline
 print("Importing pipeline done...")
 
 use_same_seed = True
@@ -28,8 +28,9 @@ if use_same_seed:
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
     torch.autograd.set_detect_anomaly(True)
-    loaded_latents = torch.load("/home/s2710099/projects/Video_Anagrams/latents/initial_latent/initial_latents.pt", weights_only=True)
-    print("Using same seed for reproducibility, loaded latents from /home/s2710099/projects/Video_Anagrams/latents/initial_latent/initial_latents.pt")
+    #loaded_latents = torch.load("/home/s2710099/projects/Video_Anagrams/latents/initial_latent/initial_latents.pt", weights_only=True)
+    loaded_latents = None
+    print("Using same seed for reproducibility, loaded latents are set to None...")
 else:
     loaded_latents = None
     print("Not using same seed, latents will be generated on the fly...") 
@@ -62,11 +63,15 @@ num_frames = 61
 num_inference_steps = 101
 guidance_scale = 7.0
 #Gridearch parameters
-asset_names_list = ["face1", "face2", "dog", "cat", "skull"]
-prompt_list = [prompt2]
+asset_names_list = ["face_0", "face_1", "face_2", "face_3", "face_4"]
+prompt_list = [prompt1,prompt2]
 inital_alpha_list = [ 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
 transfer_steps_list= [(5,2), (10,5),(15,7), (20,10), (25,12), (30,15), (45,22)]
-ref_latents_dir_list = ["./latents/precomputed_deterministic_inversion_latents_face1", "./latents/precomputed_deterministic_inversion_latents_face2", "./latents/precomputed_deterministic_inversion_latents_dog", "./latents/precomputed_deterministic_inversion_latents_cat", "./latents/precomputed_deterministic_inversion_latents_skull"]
+ref_latents_dir_list = ["/home/s2710099/cache/wan-beta/deterministic_invert_faces_528x528x61/face_0", 
+                        "/home/s2710099/cache/wan-beta/deterministic_invert_faces_528x528x61/face_1", 
+                        "/home/s2710099/cache/wan-beta/deterministic_invert_faces_528x528x61/face_2", 
+                        "/home/s2710099/cache/wan-beta/deterministic_invert_faces_528x528x61/face_3", 
+                        "/home/s2710099/cache/wan-beta/deterministic_invert_faces_528x528x61/face_4"]
 
 # Heuristic grid search
 
@@ -78,9 +83,9 @@ energy_target_ratios_list = [0.9, 0.95, 0.97, 0.99]
 
 for pidx, prompt in enumerate(prompt_list):
     for idx, ref_dir in enumerate(ref_latents_dir_list):
-        run_name = f"{asset_names_list[idx]}_prompt{2}"
+        run_name = f"{asset_names_list[idx]}_prompt{pidx+1}"
         with wandb.init(
-            project="wan-search-for-best-measurement",
+            project="PTD_inference_original_pipeline",
             name=run_name,
             config={
                 "description": "Looking for the best measurement for the PI controller in WanPTD.",
@@ -104,7 +109,7 @@ for pidx, prompt in enumerate(prompt_list):
                         width=width,
                         num_frames=num_frames,
                         num_inference_steps=num_inference_steps,
-                        latents=loaded_latents.clone() if use_same_seed else None,
+                        latents=None, 
                         guidance_scale=0.0, #NO CLASSIFIER FREE GUIDANCE FOR HEURISTIC GRID SEARCH
                     #PTM params
                         direct_transfer_steps=direct_transfer_steps,
@@ -114,7 +119,7 @@ for pidx, prompt in enumerate(prompt_list):
                         ref_latents_dir=ref_dir,
                         use_blending_heuristic_version_1=False,
                         use_blending_heuristic_version_2=False,
-                        use_blending_heuristic_version_3=False,
+                        use_blending_heuristic_version_3=True,
                         use_blending_heuristic_version_4=False,
                         Kp=0.5,
                         Ki=0.2,
@@ -127,6 +132,6 @@ for pidx, prompt in enumerate(prompt_list):
             frames = frames[0]  # Remove batch dimension -> [frames, height, width, channels]
             frame_list = [frames[i] for i in range(frames.shape[0])]
 
-            export_to_video(frame_list, f"/home/s2710099/outputs/heuristic_v4/{run_name}.mp4")
+            export_to_video(frame_list, f"/home/s2710099/outputs/inference/ptd_og_pipeline/{run_name}.mp4")
     
 wandb.finish()

@@ -6,16 +6,88 @@ import os
 import math
 import torch.nn.functional as F
 import numpy as np
+from PIL import Image
 from skimage.feature import hog
 
 from diffusers import WanPipeline
 from diffusers.pipelines.wan.pipeline_output import WanPipelineOutput
 from diffusers.callbacks import MultiPipelineCallbacks, PipelineCallback
+from diffusers.models import AutoencoderKLWan
+from diffusers.schedulers import FlowMatchEulerDiscreteScheduler
+from diffusers import WanTransformer3DModel
 import wandb
-from inference.constants import GOOD_AVG_COSINE_DIST_LIST
+from transformers import AutoTokenizer, UMT5EncoderModel
+from torchvision import transforms
 
-class WanPTDiffusionPipeline(WanPipeline):
+from inference.constants import GOOD_AVG_COSINE_DIST_LIST
+from wan_transformer import CustomWanTransformer3DModel
+from wan_controlnet import WanControlnet
+from wan_teacache import TeaCache
+
+
+
+def resize_for_crop(image, crop_h, crop_w):
+    img_h, img_w = image.shape[-2:]
+    if img_h >= crop_h and img_w >= crop_w:
+        coef = max(crop_h / img_h, crop_w / img_w)
+    elif img_h <= crop_h and img_w <= crop_w:
+        coef = max(crop_h / img_h, crop_w / img_w)
+    else:
+        coef = crop_h / img_h if crop_h > img_h else crop_w / img_w 
+    out_h, out_w = int(img_h * coef), int(img_w * coef)
+    resized_image = transforms.functional.resize(image, (out_h, out_w), antialias=True)
+    return resized_image
+
+
+def prepare_frames(input_images, video_size, do_resize=True, do_crop=True):
+    input_images = np.stack([np.array(x) for x in input_images])
+    images_tensor = torch.from_numpy(input_images).permute(0, 3, 1, 2) / 127.5 - 1
+    if do_resize:
+        images_tensor = [resize_for_crop(x, crop_h=video_size[0], crop_w=video_size[1]) for x in images_tensor]
+    if do_crop:
+        images_tensor = [transforms.functional.center_crop(x, video_size) for x in images_tensor]
+    if isinstance(images_tensor, list):
+        images_tensor = torch.stack(images_tensor)
+    return images_tensor.unsqueeze(0) 
+
+
+def prepare_controlnet_frames(controlnet_frames, height, width, dtype, device):
+    prepared_frames = prepare_frames(controlnet_frames, (height, width))
+    controlnet_encoded_frames = prepared_frames.to(dtype=dtype, device=device)
+    return controlnet_encoded_frames.permute(0, 2, 1, 3, 4).contiguous()
+
+
+class WanCNPTDiffusionPipeline(WanPipeline):
     
+    model_cpu_offload_seq = "text_encoder->transformer->transformer_2->vae->controlnet"
+    _callback_tensor_inputs = ["latents", "prompt_embeds", "negative_prompt_embeds"]
+    _optional_components = ["transformer_2"]
+
+    
+    def __init__(
+        self,
+        tokenizer: AutoTokenizer,
+        text_encoder: UMT5EncoderModel,
+        transformer: CustomWanTransformer3DModel,
+        vae: AutoencoderKLWan,
+        controlnet: WanControlnet,
+        scheduler: FlowMatchEulerDiscreteScheduler,
+        transformer_2: WanTransformer3DModel = None,
+        boundary_ratio: Optional[float] = None,
+        expand_timesteps: bool = False,
+    ):
+        super().__init__(
+            tokenizer=tokenizer, text_encoder=text_encoder, transformer=transformer,
+            vae=vae, scheduler=scheduler, transformer_2=transformer_2,
+            boundary_ratio=boundary_ratio, expand_timesteps=expand_timesteps,
+        )
+        self.register_modules(controlnet=controlnet)
+        if transformer_2 is not None:
+            assert transformer.dtype == transformer_2.dtype, (
+                f"dtype mismatch: transformer={transformer.dtype}, transformer_2={transformer_2.dtype}"
+            )
+ 
+        
     @staticmethod
     def _compute_hog_features(frames: torch.Tensor, orientations=9, pixels_per_cell=(8, 8), cells_per_block=(2, 2)):
         video = frames[0].cpu().float()
@@ -157,8 +229,25 @@ class WanPTDiffusionPipeline(WanPipeline):
         Ki_energy: float = 0.1,
         do_additional_logging: bool = False,
         
-    ):
+        #ControlNet args
+        controlnet_frames: List[Image.Image] = None,
+        controlnet_latents: Optional[torch.FloatTensor] = None,
+        controlnet_weight: float = 1.0,
+        controlnet_guidance_start: float = 0.0,
+        controlnet_guidance_end: float = 1.0,
+        controlnet_stride: int = 3,
 
+        teacache_state: Optional[TeaCache]= None,
+        teacache_treshold: float = 0.0,
+    ):
+        self.teacache = teacache_state or None
+        if (self.teacache is None) and (teacache_treshold > 0.0):
+            self.teacache = TeaCache(
+                num_inference_steps=num_inference_steps, 
+                model_name="DEFAULT",
+                treshold=teacache_treshold
+            )
+        
         if isinstance(callback_on_step_end, (PipelineCallback, MultiPipelineCallbacks)):
             callback_on_step_end_tensor_inputs = callback_on_step_end.tensor_inputs
 
@@ -268,6 +357,32 @@ class WanPTDiffusionPipeline(WanPipeline):
             
         conditional_latent = latents.clone()
         
+        # Encode controlnet frames
+        if (controlnet_latents is None) and (controlnet_frames is not None):
+            duplicate_frames_count = num_frames - len(controlnet_frames)
+            print(f'Using controlnet frames: {len(controlnet_frames)}. Extended frames count: {duplicate_frames_count}')
+            if duplicate_frames_count > 0:
+                # Simple duplicate first frame
+                # controlnet_frames = [controlnet_frames[0]] * duplicate_frames_count + controlnet_frames
+                # Or reversed duplicate frames ?
+                reversed_controlnet_frames = list(reversed(controlnet_frames))
+                controlnet_sum_frames = controlnet_frames + reversed_controlnet_frames
+                reversed_chunks_count = num_frames // len(controlnet_sum_frames)
+                controlnet_frames = [*controlnet_sum_frames]
+                for _ in range(reversed_chunks_count):
+                    controlnet_frames += controlnet_sum_frames
+
+            # If controlnet frames count greater than num_frames parameter
+            controlnet_frames = controlnet_frames[:num_frames]
+            
+            controlnet_latents = prepare_controlnet_frames(
+                controlnet_frames,
+                height, 
+                width,
+                dtype=self.controlnet.dtype, 
+                device=self.controlnet.device
+            )
+        
         #Initialize heurisitc vlaues
         ref_cosine_dist = 0.0
         ema_cosine_dist = 0.0
@@ -314,42 +429,100 @@ class WanPTDiffusionPipeline(WanPipeline):
                 batched_hidden = torch.cat([latent_model_input, conditional_latent_input], dim=0)
                 batched_timestep = timestep.repeat(2)
                 batched_prompt_embeds = prompt_embeds.repeat(2, *([1] * (prompt_embeds.dim() - 1)))
-    
-                # Cond forward
-                with current_model.cache_context("cond"):
-                    batched_noise_pred = current_model(
-                        hidden_states=batched_hidden,
-                        timestep=batched_timestep,
-                        encoder_hidden_states=batched_prompt_embeds,
+
+                controlnet_states = None
+                current_sampling_percent = i / len(timesteps)
+                if (controlnet_latents is not None) and (controlnet_guidance_start <= current_sampling_percent < controlnet_guidance_end) and (not in_low_noise_stage):
+                    controlnet_states = self.controlnet(
+                        hidden_states=latent_model_input,
+                        timestep=timestep,
+                        encoder_hidden_states=prompt_embeds,
                         attention_kwargs=attention_kwargs,
+                        controlnet_states=controlnet_latents,
                         return_dict=False,
                     )[0]
+                    if isinstance(controlnet_states, (tuple, list)):
+                        controlnet_states = [x.to(dtype=self.transformer.dtype) for x in controlnet_states]
+                    else:
+                        controlnet_states = controlnet_states.to(dtype=self.transformer.dtype)
+                        
+                # Cond forward
+                with current_model.cache_context("cond"):
+                    if not in_low_noise_stage:
+                        batched_noise_pred = current_model(
+                            hidden_states=batched_hidden,
+                            timestep=batched_timestep,
+                            encoder_hidden_states=batched_prompt_embeds,
+                            controlnet_states=controlnet_states,
+                            controlnet_weight=controlnet_weight,
+                            controlnet_stride=controlnet_stride,
+                            teacache=self.teacache,
+                            attention_kwargs=attention_kwargs,
+                            return_dict=False,
+                        )[0]
+                    else:
+                        batched_noise_pred = current_model(
+                            hidden_states=batched_hidden,
+                            timestep=batched_timestep,
+                            encoder_hidden_states=batched_prompt_embeds,
+                            attention_kwargs=attention_kwargs,
+                            return_dict=False,
+                        )[0]
+                        
                 noise_pred, cond_noise_pred = batched_noise_pred.chunk(2, dim=0)
                 
                 cosine_similarity_of_noise = F.cosine_similarity(noise_pred.flatten(), cond_noise_pred.flatten(), dim=0).item()
                 
                 # CFG
                 if self.do_classifier_free_guidance:
-                    with current_model.cache_context("uncond"):
-                        noise_uncond = current_model(
-                            hidden_states=latent_model_input,
-                            timestep=timestep,
-                            encoder_hidden_states=negative_prompt_embeds,
-                            attention_kwargs=attention_kwargs,
-                            return_dict=False,
-                        )[0]
+                    if not in_low_noise_stage:
+                        with current_model.cache_context("uncond"):
+                            noise_uncond = current_model(
+                                hidden_states=latent_model_input,
+                                timestep=timestep,
+                                encoder_hidden_states=negative_prompt_embeds,
+                                controlnet_states=controlnet_states,
+                                controlnet_weight=controlnet_weight,
+                                controlnet_stride=controlnet_stride,
+                                teacache=self.teacache,
+                                attention_kwargs=attention_kwargs,
+                                return_dict=False,
+                            )[0]
+                    else:
+                        with current_model.cache_context("uncond"):
+                            noise_uncond = current_model(
+                                hidden_states=latent_model_input,
+                                timestep=timestep,
+                                encoder_hidden_states=negative_prompt_embeds,
+                                attention_kwargs=attention_kwargs,
+                                return_dict=False,
+                            )[0]
+                            
                     noise_pred = noise_uncond + current_guidance_scale * (noise_pred - noise_uncond)
 
                 if not use_preloaded_latents:
                     ref_latent_model_input = ref_latent.to(transformer_dtype)
                     with current_model.cache_context("uncond"):
-                        ref_noise_uncond = current_model(
-                            hidden_states=ref_latent_model_input,
-                            timestep=timestep,
-                            encoder_hidden_states=uncoditional_prompt_embeds,
-                            attention_kwargs=attention_kwargs,
-                            return_dict=False,
-                        )[0]
+                        if not in_low_noise_stage:
+                            ref_noise_uncond = current_model(
+                                hidden_states=ref_latent_model_input,
+                                timestep=timestep,
+                                encoder_hidden_states=uncoditional_prompt_embeds,
+                                controlnet_states=controlnet_states,
+                                controlnet_weight=controlnet_weight,
+                                controlnet_stride=controlnet_stride,
+                                teacache=self.teacache,
+                                attention_kwargs=attention_kwargs,
+                                return_dict=False,
+                            )[0]
+                        else:
+                            ref_noise_uncond = current_model(
+                                hidden_states=ref_latent_model_input,
+                                timestep=timestep,
+                                encoder_hidden_states=uncoditional_prompt_embeds,
+                                attention_kwargs=attention_kwargs,
+                                return_dict=False,
+                            )[0]
                 
                     batched_noise = torch.cat([noise_pred, ref_noise_uncond], dim=0)
                     batched_latents = torch.cat([latents, ref_latent], dim=0)
@@ -509,6 +682,7 @@ class WanPTDiffusionPipeline(WanPipeline):
                     progress_bar.update()
 
         self._current_timestep = None
+        self.teacache = None
 
         # Decode
         if not output_type == "latent":

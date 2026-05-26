@@ -7,6 +7,7 @@ list, writing one mp4 + one wandb run per pair.
 from __future__ import annotations
 
 import argparse
+import gc
 import os
 import sys
 from pathlib import Path
@@ -30,14 +31,14 @@ ALL_PROMPTS = {**PROMPTS_BATCH_1, **PROMPTS_BATCH_2}
 _ALL_SLUGS = list(PROMPTS_BATCH_1.keys()) + list(PROMPTS_BATCH_2.keys())
 assert len(_ALL_SLUGS) == 100, f"expected 100 slugs, got {len(_ALL_SLUGS)}"
 PAIRS = [(i, _ALL_SLUGS[i]) for i in range(100)]
-HEIGHT       = 512
-WIDTH        = 512
-NUM_FRAMES   = 9
+HEIGHT       = 528
+WIDTH        = 528
+NUM_FRAMES   = 61
 NEGATIVE_PROMPT = (
     "blurry, low quality, worst quality, jpeg artifacts, text, subtitles, "
     "watermark, static image, still frame, distorted anatomy, inconsistent motion"
 )
-WANDB_PROJECT = "CN_PTD_inference_2"
+WANDB_PROJECT = "CN_PTD_inference_4_debugging"
 # -----------------------------------------------------------------------------
 
 
@@ -50,7 +51,24 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--controlnet_config_repo", type=str, required=True,
                    help="HED config snapshot dir (architecture only).")
     p.add_argument("--cache_dir", type=str, required=True,
-                   help="Wan-beta cache root (holds raw_face/ and face_latent/).")
+                   help="Wan-beta cache root (holds raw_face/ and the chosen "
+                        "invert dir).")
+    p.add_argument("--invert_type", type=str, default="euler",
+                   choices=["euler", "deterministic"],
+                   help="euler: load single stacked .pt from "
+                        "<cache>/invert_face/face_{i}.pt (Euler ODE inversion "
+                        "via the transformer). deterministic: load 100 "
+                        "step_*.pt files from "
+                        "<cache>/deterministic_invert_faces/face_{i}/ and "
+                        "stack them (linear FlowMatch formula, no model forward).")
+    p.add_argument("--invert_dir", type=str, default=None,
+                   help="Override for precomputed invert dir. Defaults to "
+                        "<cache_dir>/invert_face (euler) or "
+                        "<cache_dir>/deterministic_invert_faces (deterministic).")
+    p.add_argument("--max_pairs", type=int, default=None,
+                   help="Limit number of (face, slug) pairs processed. None = "
+                        "all 100. Use 10 for the deterministic-invert "
+                        "sanity test (only 10 face dirs exist there).")
     p.add_argument("--project_name", type=str, required=True,
                    help="Output subdir name AND wandb run-name prefix.")
     p.add_argument("--controlnet_stride", type=int, default=3)
@@ -77,7 +95,13 @@ def save_video(frames_np: np.ndarray, path: Path, fps: int = 8) -> None:
 
 def build_pipeline(args: argparse.Namespace):
     from diffusers import AutoencoderKLWan
-    from diffusers.schedulers import FlowMatchEulerDiscreteScheduler
+    # The Wan 2.2 A14B model_index/scheduler_config specifies
+    # UniPCMultistepScheduler (flow_prediction + use_flow_sigmas). The previous
+    # FlowMatchEulerDiscreteScheduler choice here was wrong — it produces a
+    # different denoising trajectory AND downcasts step() output to bf16, which
+    # is what made `_phase_substitute`'s cosine curve saturate vs. the OLD
+    # WanPTDiffusionPipeline (which loads UniPC via from_pretrained).
+    from diffusers.schedulers import UniPCMultistepScheduler
     from transformers import AutoTokenizer, UMT5EncoderModel
     from safetensors.torch import load_file
 
@@ -108,8 +132,8 @@ def build_pipeline(args: argparse.Namespace):
         base, subfolder="transformer_2", torch_dtype=torch.bfloat16,
     ).eval()
 
-    print(f"[load] scheduler ...")
-    scheduler = FlowMatchEulerDiscreteScheduler.from_pretrained(
+    print(f"[load] scheduler (UniPCMultistepScheduler) ...")
+    scheduler = UniPCMultistepScheduler.from_pretrained(
         base, subfolder="scheduler",
     )
 
@@ -154,15 +178,34 @@ def main() -> int:
     args = parse_args()
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     cache_dir = Path(args.cache_dir)
+    if args.invert_dir:
+        invert_dir = Path(args.invert_dir)
+    elif args.invert_type == "euler":
+        invert_dir = cache_dir / "invert_face"
+    else:  # deterministic
+        invert_dir = cache_dir / "deterministic_invert_faces"
+    if not invert_dir.exists():
+        precompute_cmd = (
+            "sbatch slurm/precompute_inverts.sbatch"
+            if args.invert_type == "euler"
+            else "python -m inference.run_WanIversionPipeline"
+        )
+        raise FileNotFoundError(
+            f"invert dir not found: {invert_dir}. Run `{precompute_cmd}` first."
+        )
     out_root = Path.home() / "outputs" / "inference" / args.project_name
     out_root.mkdir(parents=True, exist_ok=True)
+
+    pairs_to_run = PAIRS[: args.max_pairs] if args.max_pairs is not None else PAIRS
+    print(f"[run] invert_type={args.invert_type}  invert_dir={invert_dir}  "
+          f"num_pairs={len(pairs_to_run)}")
 
     pipe = build_pipeline(args)
     device = pipe._execution_device
 
     from accelerate.hooks import remove_hook_from_module
 
-    for face_idx, slug in PAIRS:
+    for face_idx, slug in pairs_to_run:
         if slug not in ALL_PROMPTS:
             raise ValueError(f"Unknown slug '{slug}' (face_idx={face_idx}).")
         prompt_text = ALL_PROMPTS[slug]
@@ -172,6 +215,31 @@ def main() -> int:
             raise FileNotFoundError(raw_path)
         raw_u8 = torch.load(raw_path, map_location="cpu", weights_only=True)  # (3, H, W) uint8
         face_img = Image.fromarray(raw_u8.permute(1, 2, 0).numpy())
+
+        if args.invert_type == "euler":
+            invert_path = invert_dir / f"face_{face_idx}.pt"
+            if not invert_path.exists():
+                raise FileNotFoundError(invert_path)
+            ref_latents = torch.load(invert_path, map_location="cpu", weights_only=True)
+        else:  # deterministic — 100 separate step_*.pt files per face
+            face_dir = invert_dir / f"face_{face_idx}"
+            if not face_dir.is_dir():
+                raise FileNotFoundError(face_dir)
+            step_files = sorted(face_dir.glob("step_*.pt"))
+            # deterministic_invert writes num_inference_steps + 1 files (one
+            # per inv_sigma, including the final pure-face one). The denoising
+            # loop only consumes num_inference_steps refs, so take the first N
+            # — step_0000 (pure noise) through step_{N-1} — and stack.
+            if len(step_files) < args.num_inference_steps:
+                raise ValueError(
+                    f"{face_dir} has only {len(step_files)} step_*.pt files; "
+                    f"need at least {args.num_inference_steps}."
+                )
+            latents_list = [
+                torch.load(p, map_location="cpu", weights_only=True)
+                for p in step_files[: args.num_inference_steps]
+            ]
+            ref_latents = torch.stack(latents_list, dim=0)
 
         run_name = f"face_{face_idx}_{slug}"
         run_config = dict(
@@ -199,15 +267,14 @@ def main() -> int:
             remove_hook_from_module(pipe.controlnet, recurse=True)
             pipe.controlnet.to("cuda")
             generator = torch.Generator().manual_seed(args.seed)
-            # Independent seed for the noise tensor mixed into the ref latent
-            # — must NOT share entropy with `generator` (used by the denoising
-            # init), otherwise the ref's noise term equals the latent init
-            # noise and the phase-substitute becomes a near-identity at step 0.
-            ref_noise_generator = torch.Generator().manual_seed(args.seed + 1)
 
+            # When controlnet_weight=0, skip CN entirely so cn_active==False
+            # and the CN forward never runs (cleaner null-out than weight=0,
+            # which still executes the CN forward and multiplies by zero).
+            cn_frames = ([face_img] * NUM_FRAMES) if args.controlnet_weight > 0 else None
             out = pipe(
-                controlnet_frames=[face_img] * NUM_FRAMES,
-                face_image=face_img,
+                controlnet_frames=cn_frames,
+                ref_latents=ref_latents,
                 prompt=prompt_text,
                 negative_prompt=NEGATIVE_PROMPT,
                 height=HEIGHT,
@@ -224,7 +291,6 @@ def main() -> int:
                 Ki=args.Ki,
                 max_blending_coeff_delta=args.max_blending_coeff_delta,
                 generator=generator,
-                ref_noise_generator=ref_noise_generator,
                 output_type="np",
             )
             frames = out.frames[0]  # (T, H, W, 3) float in [0, 1]
@@ -232,8 +298,16 @@ def main() -> int:
             save_video(frames, mp4_path, fps=args.fps)
             print(f"[done] wrote {mp4_path}  (face={face_idx}, slug={slug})")
 
+            # Drop per-run transients before the next face. Without this, the
+            # last run's frames / out / ref_latents and any accelerate hook
+            # state stick around and the 32G --mem footprint creeps up across
+            # 100 wandb sessions (OOM-kill observed at face 17 in job 500023).
+            del out, frames, ref_latents, raw_u8, face_img
+            gc.collect()
+            torch.cuda.empty_cache()
+
     print("[summary] all pairs done:")
-    for face_idx, slug in PAIRS:
+    for face_idx, slug in pairs_to_run:
         print(f"  face={face_idx} slug={slug} -> "
               f"{out_root / f'face_{face_idx}_{slug}.mp4'}")
     return 0

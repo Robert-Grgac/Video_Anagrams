@@ -4,11 +4,21 @@ Inherits the single-CN pipeline (`WanTextToVideoControlnetPipeline`) and adds a
 per-step spatial-FFT phase substitution that pulls the phase spectrum of the
 current main latent toward a face-derived reference latent.
 
-The reference latent is built on-the-fly each step via FlowMatch forward
-noising of a pre-encoded, pre-normalized face latent. The phase-substitute
-strength `alpha` follows the (direct, decayed) schedule of the original
-PTDiffusion runner, modulated by a cosine-distance PI controller
-(heuristic-3, always on) against the 100-entry `GOOD_AVG_COSINE_DIST_LIST`.
+The reference latents are **precomputed** and passed in as a single tensor of
+shape `(num_inference_steps, 1, 16, T_lat, H_lat, W_lat)` in denoising-step
+order — i.e. `ref_latents[0]` is the noisy end of the inversion trajectory
+and `ref_latents[N-1]` is the clean face latent. Two compatible sources:
+  * `inference/precompute_inverts.py` — Euler ODE inversion via the Wan
+    transformer (one .pt per face containing the stacked trajectory).
+  * `inference/run_WanIversionPipeline.py` — `deterministic_invert` (linear
+    FlowMatch formula, no model forward). On disk it's 100 step_*.pt files
+    per face; `run_inference.py:--invert_type=deterministic` loads them
+    sorted and stacks into the same tensor shape before passing in.
+
+The phase-substitute strength `alpha` follows the (direct, decayed) schedule
+of the original PTDiffusion runner, modulated by a cosine-distance PI
+controller (heuristic-3, always on) against the 100-entry
+`GOOD_AVG_COSINE_DIST_LIST`.
 
 Designed for `num_inference_steps == 100`. Removes teacache, prompt_embeds
 input, and controlnet_latents input vs. the parent pipeline.
@@ -48,7 +58,8 @@ class WanPTDCNPipeline(WanTextToVideoControlnetPipeline):
     """ControlNet + PTDiffusion phase-substitute pipeline.
 
     Same constructor as `WanTextToVideoControlnetPipeline`. Overrides `__call__`
-    and adds `_phase_substitute` and `_make_ref_latent` helpers.
+    and adds a `_phase_substitute` helper. Reference latents are passed in
+    precomputed (see `inference/precompute_inverts.py`).
     """
 
     @staticmethod
@@ -97,59 +108,11 @@ class WanPTDCNPipeline(WanTextToVideoControlnetPipeline):
 
         return x_dec_new.to(orig_dtype), ref_cosine_dist.item(), energy_ratio
 
-    def _make_ref_latent(self, face_latent: torch.Tensor,
-                        noise: torch.Tensor, sigma: float) -> torch.Tensor:
-        """FlowMatch forward-noise a static-video face latent to a ref latent.
-
-        face_latent: (1, 16, T_lat, H_lat, W_lat) pre-normalized, produced by
-                     VAE-encoding a pixel-space static video (face replicated
-                     `num_frames` times).
-        noise:       (1, 16, T_lat, H_lat, W_lat) fixed across the whole loop,
-                     sampled independently of the denoising init noise.
-        sigma:       scalar FlowMatch sigma at the *pre-step* position, i.e.
-                     `scheduler.sigmas[i]`. At i=0 (sigma≈1) the ref is pure
-                     noise; at i=99 (sigma≈0) the ref is ~face. Matches the
-                     working `WanPTDPipeline` + `deterministic_invert` indexing.
-        Returns:     (1, 16, T_lat, H_lat, W_lat).
-        """
-        return (1.0 - sigma) * face_latent + sigma * noise
-
-    def _encode_face_static_video(
-        self,
-        face_image: Image.Image,
-        height: int,
-        width: int,
-        num_frames: int,
-        device: torch.device,
-    ) -> torch.Tensor:
-        """Pixel-space static-video VAE encode + normalize for the face ref.
-
-        Mirrors `WanInversionPipeline._encode_reference_image_to_latents`:
-        preprocess to [-1, 1] at (H, W), replicate to a static video of
-        num_frames in pixel space, VAE-encode (deterministic via .mode()),
-        normalize with `(z - mean) / std`.
-
-        Returns: (1, 16, T_lat, H_lat, W_lat) fp32.
-        """
-        img = self.video_processor.preprocess(face_image, height=height, width=width)
-        img = img.to(device=device, dtype=torch.float32)
-        video = img.unsqueeze(2).repeat(1, 1, num_frames, 1, 1)
-        video = video.to(device=device, dtype=self.vae.dtype)
-        z = self.vae.encode(video).latent_dist.mode()
-        z = z.to(torch.float32)
-
-        z_dim = self.vae.config.z_dim
-        mean = torch.tensor(self.vae.config.latents_mean, device=device,
-                            dtype=z.dtype).view(1, z_dim, 1, 1, 1)
-        std = torch.tensor(self.vae.config.latents_std, device=device,
-                           dtype=z.dtype).view(1, z_dim, 1, 1, 1)
-        return (z - mean) / std
-
     @torch.no_grad()
     def __call__(
         self,
         controlnet_frames: List[Image.Image] = None,
-        face_image: Image.Image = None,
+        ref_latents: torch.Tensor = None,
         prompt: Union[str, List[str]] = None,
         negative_prompt: Union[str, List[str]] = None,
         height: int = 512,
@@ -160,7 +123,6 @@ class WanPTDCNPipeline(WanTextToVideoControlnetPipeline):
         guidance_scale_2: Optional[float] = None,
         num_videos_per_prompt: Optional[int] = 1,
         generator: Optional[Union[torch.Generator, List[torch.Generator]]] = None,
-        ref_noise_generator: Optional[torch.Generator] = None,
         output_type: Optional[str] = "np",
         return_dict: bool = True,
         attention_kwargs: Optional[Dict[str, Any]] = None,
@@ -198,11 +160,20 @@ class WanPTDCNPipeline(WanTextToVideoControlnetPipeline):
             callback_on_step_end_tensor_inputs,
             guidance_scale_2,
         )
-        assert num_inference_steps == 100, (
-            "WanPTDCNPipeline requires num_inference_steps == 100 because "
-            "heuristic-3 indexes GOOD_AVG_COSINE_DIST_LIST (100 entries) by step."
+        assert num_inference_steps in (100, 101), (
+            "WanPTDCNPipeline requires num_inference_steps in (100, 101) "
+            "because heuristic-3 indexes GOOD_AVG_COSINE_DIST_LIST (101 "
+            "entries) by step."
         )
-        assert face_image is not None, "face_image is required (PIL.Image)."
+        assert ref_latents is not None, (
+            "ref_latents is required: a tensor of shape "
+            "(num_inference_steps, 1, 16, T_lat, H_lat, W_lat) produced by "
+            "inference/precompute_inverts.py."
+        )
+        assert ref_latents.shape[0] == num_inference_steps, (
+            f"ref_latents has {ref_latents.shape[0]} steps but "
+            f"num_inference_steps={num_inference_steps}."
+        )
 
         if num_frames % self.vae_scale_factor_temporal != 1:
             num_frames = num_frames // self.vae_scale_factor_temporal * self.vae_scale_factor_temporal + 1
@@ -277,33 +248,16 @@ class WanPTDCNPipeline(WanTextToVideoControlnetPipeline):
         )
         mask = torch.ones(latents.shape, dtype=torch.float32, device=device)
 
-        # Sample ONE noise tensor, independent of the denoising init noise,
-        # and reuse it across all 100 calls to `_make_ref_latent`. Mirrors
-        # `deterministic_invert`'s single-`eps` convention.
-        if ref_noise_generator is None:
-            noise_fixed = torch.randn(
-                latents.shape, dtype=torch.float32, device=device,
+        # Stage the precomputed ref_latents trajectory onto the same device as
+        # `latents`. Kept in fp32; `_phase_substitute` does its own dtype
+        # handling. ref_latents[i] is consumed at denoising step i.
+        if ref_latents.shape[1:] != latents.shape:
+            raise ValueError(
+                f"ref_latents shape {tuple(ref_latents.shape)} is incompatible "
+                f"with latents shape {tuple(latents.shape)}: dims after the "
+                f"step axis must match exactly."
             )
-        else:
-            ref_device = ref_noise_generator.device
-            noise_fixed = torch.randn(
-                latents.shape, dtype=torch.float32, device=ref_device,
-                generator=ref_noise_generator,
-            ).to(device=device)
-
-        # On-the-fly VAE encode of the face into a static-video latent that
-        # already has T_lat matching `latents`. Replaces the precomputed
-        # `face_latent/face_{i}.pt` cache from `encode_raw_faces.py` (which
-        # encoded a single frame and required latent-space `.expand(...)`,
-        # producing a different distribution than the Wan VAE's temporal
-        # encode of a static video).
-        face_latent = self._encode_face_static_video(
-            face_image=face_image,
-            height=height,
-            width=width,
-            num_frames=num_frames,
-            device=device,
-        )
+        ref_latents = ref_latents.to(device=device, dtype=torch.float32)
 
         # 7. Encode controlnet frames
         controlnet_latents = None
@@ -393,11 +347,11 @@ class WanPTDCNPipeline(WanTextToVideoControlnetPipeline):
                         hidden_states=latent_model_input,
                         timestep=timestep,
                         encoder_hidden_states=prompt_embeds,
+                        attention_kwargs=attention_kwargs,
                         controlnet_states=controlnet_states,
                         controlnet_weight=controlnet_weight,
                         controlnet_stride=controlnet_stride,
                         teacache=None,
-                        attention_kwargs=attention_kwargs,
                         return_dict=False,
                     )[0]
 
@@ -407,11 +361,11 @@ class WanPTDCNPipeline(WanTextToVideoControlnetPipeline):
                             hidden_states=latent_model_input,
                             timestep=timestep,
                             encoder_hidden_states=negative_prompt_embeds,
+                            attention_kwargs=attention_kwargs,
                             controlnet_states=controlnet_states,
                             controlnet_weight=controlnet_weight,
                             controlnet_stride=controlnet_stride,
                             teacache=None,
-                            attention_kwargs=attention_kwargs,
                             return_dict=False,
                         )[0]
                     noise_pred = noise_uncond + current_guidance_scale * (noise_pred - noise_uncond)
@@ -419,17 +373,10 @@ class WanPTDCNPipeline(WanTextToVideoControlnetPipeline):
                 # Scheduler step
                 latents = self.scheduler.step(noise_pred, t, latents, return_dict=False)[0]
 
-                # Build per-step ref_latent via FlowMatch forward noising at
-                # the PRE-step sigma. At i=0 (sigma≈1) the ref is pure noise;
-                # at i=99 (sigma≈0) the ref is ~face. Matches the working
-                # `WanPTDPipeline` indexing of `ref_latents_list[i]` produced
-                # by `deterministic_invert` over `inv_sigmas = flip(sigmas)`.
-                sigma_pre = self.scheduler.sigmas[i].to(latents)
-                ref_latent = self._make_ref_latent(
-                    face_latent=face_latent,
-                    noise=noise_fixed,
-                    sigma=sigma_pre,
-                )
+                # ref_latents[i] is the precomputed Euler-ODE inversion latent
+                # corresponding to denoising step i (saved in denoising order
+                # by `inference/precompute_inverts.py`).
+                ref_latent = ref_latents[i]
 
                 # (direct, decayed) base alpha schedule
                 if i < direct_transfer_steps:
