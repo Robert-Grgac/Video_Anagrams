@@ -8,6 +8,7 @@
 #SBATCH --time=24:00:00
 #SBATCH --output=/home/%u/robert_thesis/logs/%x-%j.out
 #SBATCH --error=/home/%u/robert_thesis/logs/%x-%j.err
+#SBATCH --export=ALL
 
 set -euo pipefail
 
