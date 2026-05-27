@@ -6,11 +6,13 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=180G
 #SBATCH --time=24:00:00
-#SBATCH --output=%x-%j.out
-#SBATCH --error=%x-%j.err
-#SBATCH --chdir=/home/%u/robert_thesis/Video_Anagrams
+#SBATCH --output=/home/%u/robert_thesis/logs/%x-%j.out
+#SBATCH --error=/home/%u/robert_thesis/logs/%x-%j.err
 
 set -euo pipefail
+
+# SLURM doesn't expand %u in --chdir, so do it here where bash can expand $HOME.
+cd "$HOME/robert_thesis/Video_Anagrams"
 
 # ============================================================================
 # ONE-TIME SETUP (run once on a Snellius login node before submitting):
