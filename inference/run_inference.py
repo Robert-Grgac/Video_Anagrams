@@ -38,7 +38,46 @@ NEGATIVE_PROMPT = (
     "blurry, low quality, worst quality, jpeg artifacts, text, subtitles, "
     "watermark, static image, still frame, distorted anatomy, inconsistent motion"
 )
-WANDB_PROJECT = "CN_PTD_inference_4_debugging"
+WANDB_PROJECT = "CN_PTD_inference_6"
+
+# ---- Sweep config (used only when --sweep is passed) -----------------------
+# Each entry is one sub-experiment that runs `face_idxs` against the same
+# (guidance_scale, controlnet_weight). Output goes to
+# ~/outputs/inference/<project_name>/<variant_name>/face_{i}_<slug>.mp4 and
+# the wandb run name is "<variant_name>_face_{i}_<slug>". Reuses the loaded
+# pipeline across all entries (one model load for the whole sweep).
+#
+# `prompt_overrides`: None → use ALL_PROMPTS[slug] for each face (i.e. the
+# slug-derived short prompts in input_prompts.py). Or a list of strings the
+# same length as `face_idxs` to override per-face (used for the verbose-prompt
+# variant matching the old PTD_Pipeline runner's prompt style).
+SWEEP_CONFIGS = [
+    # CFG sweep at CN=1.0, slug-derived prompts
+    {"variant_name": "cfg1p5_cnw1p0", "guidance_scale": 1.5, "controlnet_weight": 1.0,
+     "face_idxs": [0, 1, 2, 3, 4], "prompt_overrides": None},
+    {"variant_name": "cfg2p0_cnw1p0", "guidance_scale": 2.0, "controlnet_weight": 1.0,
+     "face_idxs": [0, 1, 2, 3, 4], "prompt_overrides": None},
+    {"variant_name": "cfg3p0_cnw1p0", "guidance_scale": 3.0, "controlnet_weight": 1.0,
+     "face_idxs": [0, 1, 2, 3, 4], "prompt_overrides": None},
+    {"variant_name": "cfg4p0_cnw1p0", "guidance_scale": 4.0, "controlnet_weight": 1.0,
+     "face_idxs": [0, 1, 2, 3, 4], "prompt_overrides": None},
+    # CN weight sweep at CFG=5, slug-derived prompts
+    {"variant_name": "cfg5p0_cnw0p5", "guidance_scale": 5.0, "controlnet_weight": 0.5,
+     "face_idxs": [0, 1, 2, 3, 4], "prompt_overrides": None},
+    {"variant_name": "cfg5p0_cnw2p5", "guidance_scale": 5.0, "controlnet_weight": 2.5,
+     "face_idxs": [0, 1, 2, 3, 4], "prompt_overrides": None},
+    # CFG=5, CN=1.0 with the verbose OLD-PTD-runner-style prompts.
+    {"variant_name": "cfg5p0_cnw1p0_verbose_prompts",
+     "guidance_scale": 5.0, "controlnet_weight": 1.0,
+     "face_idxs": [0, 1, 2, 3, 4],
+     "prompt_overrides": [
+         "snowy mountain,static, no movement, in style of cubist painting, high quality",
+         "grand canyon, static, no movement, photorealistic, high quality",
+         "park, static, no movement, in style of oil painting, high quality",
+         "seaflor, static, no movement, in style of watercolor painting, high quality",
+         "flowers, static, no movement, in style of street art, high quality",
+     ]},
+]
 # -----------------------------------------------------------------------------
 
 
@@ -83,7 +122,56 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--num_inference_steps", type=int, default=100)
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--fps", type=int, default=8)
+    p.add_argument("--sweep", action="store_true",
+                   help="Iterate over SWEEP_CONFIGS instead of the single-config "
+                        "(--guidance_scale, --controlnet_weight, --max_pairs) "
+                        "path. Each variant runs its face_idxs against its own "
+                        "cfg/cn_weight; outputs go to "
+                        "<project_name>/<variant_name>/face_*.mp4.")
     return p.parse_args()
+
+
+def build_jobs(args: argparse.Namespace) -> list[dict]:
+    """Flatten the sweep config (or the single-config args) into a list of
+    per-run job dicts. Each job carries everything needed to run one inference:
+    variant_name (or None), face_idx, slug, prompt, guidance_scale, controlnet_weight.
+    """
+    jobs: list[dict] = []
+    if args.sweep:
+        for variant in SWEEP_CONFIGS:
+            face_idxs = variant["face_idxs"]
+            overrides = variant.get("prompt_overrides")
+            if overrides is not None and len(overrides) != len(face_idxs):
+                raise ValueError(
+                    f"variant {variant['variant_name']!r}: "
+                    f"prompt_overrides has {len(overrides)} entries but "
+                    f"face_idxs has {len(face_idxs)}."
+                )
+            for slot_i, face_idx in enumerate(face_idxs):
+                slug = _ALL_SLUGS[face_idx]
+                prompt_text = overrides[slot_i] if overrides is not None else ALL_PROMPTS[slug]
+                jobs.append(dict(
+                    variant_name=variant["variant_name"],
+                    face_idx=face_idx,
+                    slug=slug,
+                    prompt=prompt_text,
+                    guidance_scale=variant["guidance_scale"],
+                    controlnet_weight=variant["controlnet_weight"],
+                ))
+    else:
+        pairs = PAIRS[: args.max_pairs] if args.max_pairs is not None else PAIRS
+        for face_idx, slug in pairs:
+            if slug not in ALL_PROMPTS:
+                raise ValueError(f"Unknown slug '{slug}' (face_idx={face_idx}).")
+            jobs.append(dict(
+                variant_name=None,
+                face_idx=face_idx,
+                slug=slug,
+                prompt=ALL_PROMPTS[slug],
+                guidance_scale=args.guidance_scale,
+                controlnet_weight=args.controlnet_weight,
+            ))
+    return jobs
 
 
 def save_video(frames_np: np.ndarray, path: Path, fps: int = 8) -> None:
@@ -196,19 +284,30 @@ def main() -> int:
     out_root = Path.home() / "outputs" / "inference" / args.project_name
     out_root.mkdir(parents=True, exist_ok=True)
 
-    pairs_to_run = PAIRS[: args.max_pairs] if args.max_pairs is not None else PAIRS
-    print(f"[run] invert_type={args.invert_type}  invert_dir={invert_dir}  "
-          f"num_pairs={len(pairs_to_run)}")
+    jobs = build_jobs(args)
+    mode = "sweep" if args.sweep else "single-config"
+    print(f"[run] mode={mode}  invert_type={args.invert_type}  "
+          f"invert_dir={invert_dir}  num_jobs={len(jobs)}")
+    if args.sweep:
+        for variant in SWEEP_CONFIGS:
+            print(f"  variant={variant['variant_name']!r}  "
+                  f"cfg={variant['guidance_scale']}  "
+                  f"cn_weight={variant['controlnet_weight']}  "
+                  f"faces={variant['face_idxs']}  "
+                  f"prompt_overrides={'yes' if variant.get('prompt_overrides') else 'no'}")
 
     pipe = build_pipeline(args)
     device = pipe._execution_device
 
     from accelerate.hooks import remove_hook_from_module
 
-    for face_idx, slug in pairs_to_run:
-        if slug not in ALL_PROMPTS:
-            raise ValueError(f"Unknown slug '{slug}' (face_idx={face_idx}).")
-        prompt_text = ALL_PROMPTS[slug]
+    for job_i, job in enumerate(jobs):
+        face_idx = job["face_idx"]
+        slug = job["slug"]
+        prompt_text = job["prompt"]
+        guidance_scale = job["guidance_scale"]
+        controlnet_weight = job["controlnet_weight"]
+        variant_name = job["variant_name"]
 
         raw_path = cache_dir / "raw_face" / f"face_{face_idx}.pt"
         if not raw_path.exists():
@@ -241,19 +340,26 @@ def main() -> int:
             ]
             ref_latents = torch.stack(latents_list, dim=0)
 
-        run_name = f"face_{face_idx}_{slug}"
+        if variant_name is not None:
+            run_name = f"{variant_name}_face_{face_idx}_{slug}"
+            mp4_path = out_root / variant_name / f"face_{face_idx}_{slug}.mp4"
+        else:
+            run_name = f"face_{face_idx}_{slug}"
+            mp4_path = out_root / f"face_{face_idx}_{slug}.mp4"
+
         run_config = dict(
             project_name=args.project_name,
+            variant_name=variant_name,
             checkpoint=args.checkpoint_path,
             controlnet_stride=args.controlnet_stride,
-            controlnet_weight=args.controlnet_weight,
+            controlnet_weight=controlnet_weight,
             initial_blending_coeff=args.initial_blending_coeff,
             direct_transfer_steps=args.direct_transfer_steps,
             decayed_transfer_steps=args.decayed_transfer_steps,
             Kp=args.Kp,
             Ki=args.Ki,
             max_blending_coeff_delta=args.max_blending_coeff_delta,
-            guidance_scale=args.guidance_scale,
+            guidance_scale=guidance_scale,
             num_inference_steps=args.num_inference_steps,
             seed=args.seed,
             face_idx=face_idx,
@@ -262,7 +368,9 @@ def main() -> int:
         )
         with wandb.init(project=WANDB_PROJECT, name=run_name, config=run_config,
                         reinit=True) as run:
-            print(f"[run] {run_name}  prompt={prompt_text!r}")
+            print(f"[{job_i + 1}/{len(jobs)}] run={run_name}  "
+                  f"cfg={guidance_scale}  cn_weight={controlnet_weight}  "
+                  f"prompt={prompt_text!r}")
             # Re-pin CN to GPU (accelerate re-attaches per call)
             remove_hook_from_module(pipe.controlnet, recurse=True)
             pipe.controlnet.to("cuda")
@@ -271,7 +379,7 @@ def main() -> int:
             # When controlnet_weight=0, skip CN entirely so cn_active==False
             # and the CN forward never runs (cleaner null-out than weight=0,
             # which still executes the CN forward and multiplies by zero).
-            cn_frames = ([face_img] * NUM_FRAMES) if args.controlnet_weight > 0 else None
+            cn_frames = ([face_img] * NUM_FRAMES) if controlnet_weight > 0 else None
             out = pipe(
                 controlnet_frames=cn_frames,
                 ref_latents=ref_latents,
@@ -281,8 +389,8 @@ def main() -> int:
                 width=WIDTH,
                 num_frames=NUM_FRAMES,
                 num_inference_steps=args.num_inference_steps,
-                guidance_scale=args.guidance_scale,
-                controlnet_weight=args.controlnet_weight,
+                guidance_scale=guidance_scale,
+                controlnet_weight=controlnet_weight,
                 controlnet_stride=args.controlnet_stride,
                 direct_transfer_steps=args.direct_transfer_steps,
                 decayed_transfer_steps=args.decayed_transfer_steps,
@@ -294,7 +402,6 @@ def main() -> int:
                 output_type="np",
             )
             frames = out.frames[0]  # (T, H, W, 3) float in [0, 1]
-            mp4_path = out_root / f"{run_name}.mp4"
             save_video(frames, mp4_path, fps=args.fps)
             print(f"[done] wrote {mp4_path}  (face={face_idx}, slug={slug})")
 
@@ -306,10 +413,14 @@ def main() -> int:
             gc.collect()
             torch.cuda.empty_cache()
 
-    print("[summary] all pairs done:")
-    for face_idx, slug in pairs_to_run:
-        print(f"  face={face_idx} slug={slug} -> "
-              f"{out_root / f'face_{face_idx}_{slug}.mp4'}")
+    print("[summary] all jobs done:")
+    for job in jobs:
+        if job["variant_name"] is not None:
+            path = out_root / job["variant_name"] / f"face_{job['face_idx']}_{job['slug']}.mp4"
+        else:
+            path = out_root / f"face_{job['face_idx']}_{job['slug']}.mp4"
+        print(f"  variant={job['variant_name']!r:>40s}  "
+              f"face={job['face_idx']}  slug={job['slug']}  -> {path}")
     return 0
 
 

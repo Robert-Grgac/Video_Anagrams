@@ -4,7 +4,7 @@
 #SBATCH --nodelist=hpc-node31
 #SBATCH --cpus-per-task=2
 #SBATCH --gres=gpu:1
-#SBATCH --time=12:00:00
+#SBATCH --time=24:00:00
 #SBATCH --mem=160G
 #SBATCH --output=/home/s2710099/logs/wan-ptd-cn-infer-%j.out
 #SBATCH --error=/home/s2710099/logs/wan-ptd-cn-infer-%j.err
@@ -195,6 +195,7 @@ python -m inference.run_inference \
     --seed "$SEED" \
     --invert_type "$INVERT_TYPE" \
     ${INVERT_DIR:+--invert_dir "$INVERT_DIR"} \
-    ${MAX_PAIRS:+--max_pairs "$MAX_PAIRS"}
+    ${MAX_PAIRS:+--max_pairs "$MAX_PAIRS"} \
+    ${SWEEP:+--sweep}
 
 # Cleanup of $ScratchDir is handled by the EXIT trap above.
