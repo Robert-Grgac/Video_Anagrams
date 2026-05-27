@@ -39,7 +39,8 @@ RAW_FACE_DIR = WAN_BETA_CACHE / "raw_face"
 OUT_DIR = WAN_BETA_CACHE / "deterministic_invert_faces_528x528x61"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-NUM_FACES = 10
+START_IDX = int(os.environ.get("FACE_START_IDX", "0"))
+END_IDX = int(os.environ.get("FACE_END_IDX", "10"))   # exclusive
 NUM_FRAMES = 61
 HEIGHT = 528
 WIDTH = 528
@@ -53,7 +54,7 @@ pipe = WanInversionPipeline.from_pretrained(WAN_MODEL, vae=vae, torch_dtype=dtyp
 pipe.enable_model_cpu_offload()
 print("[ready] pipeline setup done")
 
-for face_idx in range(NUM_FACES):
+for face_idx in range(START_IDX, END_IDX):
     raw_path = RAW_FACE_DIR / f"face_{face_idx}.pt"
     if not raw_path.exists():
         raise FileNotFoundError(raw_path)
@@ -76,4 +77,4 @@ for face_idx in range(NUM_FACES):
     )
     print(f"[done] face_{face_idx}")
 
-print(f"[summary] wrote {NUM_FACES} face dirs to {OUT_DIR}")
+print(f"[summary] wrote face_{START_IDX}..face_{END_IDX - 1} dirs to {OUT_DIR}")
