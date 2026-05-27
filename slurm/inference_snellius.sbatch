@@ -48,6 +48,12 @@ module load Miniconda3/24.7.1-0
 source $(conda info --base)/etc/profile.d/conda.sh
 conda activate wan22
 
+# Force PATH to put the env's bin first — Miniconda's base python otherwise
+# shadows it on Snellius, causing `python` to resolve to the wrong interpreter.
+export PATH="$CONDA_PREFIX/bin:$PATH"
+hash -r
+echo "[env] python=$(which python)  ($(python --version))"
+
 # ============================================================================
 # Resolve source paths on persistent storage (read once during stage-in)
 # ============================================================================
