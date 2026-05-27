@@ -41,8 +41,8 @@ trap cleanup_node EXIT SIGINT SIGTERM
 # Modules + conda env
 # ============================================================================
 module purge
-module load 2023
-module load Miniconda3/23.5.2-0           # adjust if `module avail Miniconda3` shows a different version
+module load 2024
+module load Miniconda3/24.7.1-0
 source $(conda info --base)/etc/profile.d/conda.sh
 conda activate wan22
 
