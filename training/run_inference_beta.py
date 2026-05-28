@@ -29,6 +29,15 @@ if TYPE_CHECKING:
 
 ALL_PROMPTS = {**PROMPTS_BATCH_1, **PROMPTS_BATCH_2}
 
+# Canonical face↔slug pairing shared across all inference paths
+# (inference/run_inference.py, training/run_inference_beta.py, the WanPTD
+# baseline runner, and the slurm wrappers). face_i is paired with the i-th
+# slug in PROMPTS_BATCH_1+PROMPTS_BATCH_2 declaration order, e.g.
+# face_0 ↔ snowy_mountain, face_1 ↔ canyon, ..., face_99 ↔ ivy_wall.
+# Match this list when comparing controlnet/PTD/baseline outputs.
+_ALL_SLUGS = list(PROMPTS_BATCH_1.keys()) + list(PROMPTS_BATCH_2.keys())
+assert len(_ALL_SLUGS) == 100, f"expected 100 slugs, got {len(_ALL_SLUGS)}"
+
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
@@ -102,15 +111,35 @@ def parse_args() -> argparse.Namespace:
 
 
 def resolve_slug(cache_dir: Path, face_idx: int, slug_arg: str | None) -> str:
+    """Resolve which slug to pair with `face_idx`.
+
+    --slug wins if given. Otherwise we use the canonical declaration-order
+    pairing (face_i ↔ _ALL_SLUGS[i]) so that this script, inference/
+    run_inference.py, and the WanPTD baseline runner all produce comparable
+    (face, prompt) tuples. The previous behavior of "first matching slug in
+    the manifest" yielded alphabetical order, which silently disagreed with
+    the other inference paths.
+    """
     if slug_arg is not None:
         if slug_arg not in ALL_PROMPTS:
             raise ValueError(f"Unknown slug '{slug_arg}'.")
         return slug_arg
-    manifest = json.loads((cache_dir / "manifest.json").read_text())
-    for rec in manifest:
-        if rec["face_idx"] == face_idx:
-            return rec["slug"]
-    raise RuntimeError(f"No manifest entry found for face_idx={face_idx}.")
+    if not (0 <= face_idx < len(_ALL_SLUGS)):
+        raise ValueError(
+            f"face_idx={face_idx} is outside [0, {len(_ALL_SLUGS) - 1}]; "
+            f"pass --slug explicitly if you want a non-canonical pairing."
+        )
+    slug = _ALL_SLUGS[face_idx]
+    manifest_path = cache_dir / "manifest.json"
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text())
+        if not any(r["face_idx"] == face_idx and r["slug"] == slug for r in manifest):
+            raise RuntimeError(
+                f"Canonical pair (face_idx={face_idx}, slug='{slug}') not found "
+                f"in manifest {manifest_path}. The cache was likely precomputed "
+                f"against a different slug set."
+            )
+    return slug
 
 
 def load_canny_image(cache_dir: Path, face_idx: int,

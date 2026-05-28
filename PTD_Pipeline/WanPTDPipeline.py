@@ -73,41 +73,42 @@ class WanPTDiffusionPipeline(WanPipeline):
         return ref_latents
     
     @staticmethod
-    def _phase_substitute(x_dec: torch.Tensor, ref_latent: torch.Tensor, alpha: float, step: int, conditional_latent: torch.Tensor) -> torch.Tensor:
+    def _phase_substitute(x_dec: torch.Tensor, ref_latent: torch.Tensor, alpha: float, step: int, conditional_latent: Optional[torch.Tensor] = None) -> torch.Tensor:
         ref_latent_fft = torch.fft.fft2(ref_latent)
         ref_latent_angle = torch.angle(ref_latent_fft)
-        
+
         x_dec_fft = torch.fft.fft2(x_dec)
         x_dec_mag = torch.abs(x_dec_fft)
         x_dec_angle = torch.angle(x_dec_fft)
         mixed_angle = ref_latent_angle * alpha + (1 - alpha) * x_dec_angle
-        
-        conditional_latent_fft = torch.fft.fft2(conditional_latent)
-        conditional_latent_mag = torch.abs(conditional_latent_fft)
-        
+
         energy_before = (x_dec ** 2).sum()
-        
+
         #Reconstuction
         x_dec_fft = x_dec_mag * torch.cos(mixed_angle) + \
                     x_dec_mag * torch.sin(mixed_angle) * torch.complex(torch.zeros_like(x_dec_mag),
                                                                        torch.ones_like(x_dec_mag))
         x_dec = torch.fft.ifft2(x_dec_fft).real
-        
+
         energy_after = (x_dec ** 2).sum()
         energy_ratio = (energy_after / (energy_before + 1e-10)).item()
-        
+
         #Log the cosine distance between the reference and the x_dec angle
-        ref_cosine_dist = torch.cos(ref_latent_angle - x_dec_angle).mean() 
-        mse_mag = torch.nn.functional.mse_loss(conditional_latent_mag, x_dec_mag)
-        wandb.log({
-        "ref_cosine_dist_mean": ref_cosine_dist.item(), 
-        "cond_mse_mag": mse_mag.item(), 
-        "alpha": alpha,
-        "energy_ratio": energy_ratio,
-        "energy_before": energy_before.item(),
-        "energy_after": energy_after.item(),
-        }, step=step)
-        
+        ref_cosine_dist = torch.cos(ref_latent_angle - x_dec_angle).mean()
+        log_payload = {
+            "ref_cosine_dist_mean": ref_cosine_dist.item(),
+            "alpha": alpha,
+            "energy_ratio": energy_ratio,
+            "energy_before": energy_before.item(),
+            "energy_after": energy_after.item(),
+        }
+        if conditional_latent is not None:
+            conditional_latent_fft = torch.fft.fft2(conditional_latent)
+            conditional_latent_mag = torch.abs(conditional_latent_fft)
+            mse_mag = torch.nn.functional.mse_loss(conditional_latent_mag, x_dec_mag)
+            log_payload["cond_mse_mag"] = mse_mag.item()
+        wandb.log(log_payload, step=step)
+
         return x_dec, ref_cosine_dist.item(), energy_ratio
     
     @torch.no_grad()
@@ -156,8 +157,25 @@ class WanPTDiffusionPipeline(WanPipeline):
         Kp_energy: float = 2.0,
         Ki_energy: float = 0.1,
         do_additional_logging: bool = False,
-        
+        track_conditional_baseline: bool = True,
+
     ):
+        # `track_conditional_baseline` controls a parallel "what-if no phase
+        # substitution" trajectory that exists ONLY to compute two wandb scalars
+        # (`cond_mse_mag` inside `_phase_substitute`, plus `cosine_similarity_of_noise`
+        # which is only logged when `do_additional_logging=True`). Keeping it
+        # active doubles the transformer-forward batch every step, which
+        # dominates wall time. Default True preserves the original behavior used
+        # by the grid-search runners; set False to halve per-step compute when
+        # those metrics are not needed (e.g. the 100-fair baseline run).
+        if not track_conditional_baseline and do_additional_logging:
+            raise ValueError(
+                "do_additional_logging=True requires the conditional baseline "
+                "trajectory (it logs mse_on_latents / latent_cos_sim / "
+                "normalized_mse_on_latents which all reference conditional_latent). "
+                "Either keep track_conditional_baseline=True or disable "
+                "do_additional_logging."
+            )
 
         if isinstance(callback_on_step_end, (PipelineCallback, MultiPipelineCallbacks)):
             callback_on_step_end_tensor_inputs = callback_on_step_end.tensor_inputs
@@ -265,8 +283,8 @@ class WanPTDiffusionPipeline(WanPipeline):
         
         if inital_ref_latent is not None:
             ref_latent = inital_ref_latent.to(device)
-            
-        conditional_latent = latents.clone()
+
+        conditional_latent = latents.clone() if track_conditional_baseline else None
         
         #Initialize heurisitc vlaues
         ref_cosine_dist = 0.0
@@ -310,23 +328,36 @@ class WanPTDiffusionPipeline(WanPipeline):
                 else:
                     timestep = t.expand(latents.shape[0])
 
-                conditional_latent_input = conditional_latent.to(transformer_dtype)
-                batched_hidden = torch.cat([latent_model_input, conditional_latent_input], dim=0)
-                batched_timestep = timestep.repeat(2)
-                batched_prompt_embeds = prompt_embeds.repeat(2, *([1] * (prompt_embeds.dim() - 1)))
-    
-                # Cond forward
-                with current_model.cache_context("cond"):
-                    batched_noise_pred = current_model(
-                        hidden_states=batched_hidden,
-                        timestep=batched_timestep,
-                        encoder_hidden_states=batched_prompt_embeds,
-                        attention_kwargs=attention_kwargs,
-                        return_dict=False,
-                    )[0]
-                noise_pred, cond_noise_pred = batched_noise_pred.chunk(2, dim=0)
-                
-                cosine_similarity_of_noise = F.cosine_similarity(noise_pred.flatten(), cond_noise_pred.flatten(), dim=0).item()
+                if track_conditional_baseline:
+                    conditional_latent_input = conditional_latent.to(transformer_dtype)
+                    batched_hidden = torch.cat([latent_model_input, conditional_latent_input], dim=0)
+                    batched_timestep = timestep.repeat(2)
+                    batched_prompt_embeds = prompt_embeds.repeat(2, *([1] * (prompt_embeds.dim() - 1)))
+
+                    # Cond forward (batch = 2: actual trajectory + baseline)
+                    with current_model.cache_context("cond"):
+                        batched_noise_pred = current_model(
+                            hidden_states=batched_hidden,
+                            timestep=batched_timestep,
+                            encoder_hidden_states=batched_prompt_embeds,
+                            attention_kwargs=attention_kwargs,
+                            return_dict=False,
+                        )[0]
+                    noise_pred, cond_noise_pred = batched_noise_pred.chunk(2, dim=0)
+
+                    cosine_similarity_of_noise = F.cosine_similarity(noise_pred.flatten(), cond_noise_pred.flatten(), dim=0).item()
+                else:
+                    # Single-trajectory forward (no parallel baseline)
+                    with current_model.cache_context("cond"):
+                        noise_pred = current_model(
+                            hidden_states=latent_model_input,
+                            timestep=timestep,
+                            encoder_hidden_states=prompt_embeds,
+                            attention_kwargs=attention_kwargs,
+                            return_dict=False,
+                        )[0]
+                    cond_noise_pred = None
+                    cosine_similarity_of_noise = 0.0
                 
                 # CFG
                 if self.do_classifier_free_guidance:
@@ -359,11 +390,14 @@ class WanPTDiffusionPipeline(WanPipeline):
 
                     latents, ref_latent = batched_result.chunk(2, dim=0)
                 else:
-                    # scheduler step for main latents
-                    batched_noise_for_scheduler = torch.cat([noise_pred, cond_noise_pred], dim=0)
-                    batched_latents = torch.cat([latents, conditional_latent], dim=0)
-                    batched_result = self.scheduler.step(batched_noise_for_scheduler, t, batched_latents, return_dict=False)[0]
-                    latents, conditional_latent = batched_result.chunk(2, dim=0)
+                    # scheduler step for main latents (and parallel baseline, when tracked)
+                    if track_conditional_baseline:
+                        batched_noise_for_scheduler = torch.cat([noise_pred, cond_noise_pred], dim=0)
+                        batched_latents = torch.cat([latents, conditional_latent], dim=0)
+                        batched_result = self.scheduler.step(batched_noise_for_scheduler, t, batched_latents, return_dict=False)[0]
+                        latents, conditional_latent = batched_result.chunk(2, dim=0)
+                    else:
+                        latents = self.scheduler.step(noise_pred, t, latents, return_dict=False)[0]
                     ref_latent = ref_latents_list[i]
                 
                 if i < direct_transfer_steps:
