@@ -59,8 +59,8 @@ def parse_args() -> argparse.Namespace:
                    help="Which face's Canny to condition on. Ignored when --face_idxs is set.")
     p.add_argument("--face_idxs", type=str, default=None,
                    help="Comma- or space-separated list of face indices, e.g. '0,25,50,75,99'. "
-                        "When set, the pipeline is built ONCE and one mp4 per face is written; "
-                        "output filenames get a '_face{idx}' suffix. Overrides --face_idx.")
+                        "When set, the pipeline is built ONCE and one mp4 per face is written, "
+                        "named face_{idx}_{slug}.mp4 in the output dir. Overrides --face_idx.")
     p.add_argument("--slug", type=str, default=None,
                    help="Slug name from PROMPTS_BATCH_*. If unset, picks the first slug "
                         "available for face_idx in the cache manifest.")
@@ -74,8 +74,9 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--controlnet_weight", type=float, default=1.0)
     p.add_argument("--weights", type=str, default=None,
                    help="Optional comma-separated list of controlnet_weight values. "
-                        "If set, builds the pipeline once and writes one mp4 per weight; "
-                        "output filenames get a '_w{weight}' suffix. Overrides --controlnet_weight.")
+                        "If set, builds the pipeline once and writes one mp4 per weight. "
+                        "A '_w{weight}' suffix is added ONLY when >1 weight is swept "
+                        "(a single value yields no suffix). Overrides --controlnet_weight.")
     p.add_argument("--controlnet_stride", type=int, default=3)
     # ControlNet was trained only against the high-noise expert (sigma >= 0.875).
     # Limit injection to that regime: with FlowMatch's roughly-linear sigma
@@ -372,18 +373,20 @@ def main() -> int:
                 if not sweep_active:
                     target = out_path
                 else:
+                    # Multi-face runs name each file face_{idx}_{slug} (the
+                    # out_path stem is used only for single-face sweeps). Weight/
+                    # end suffixes are appended ONLY when more than one value is
+                    # actually swept, so the common single-weight/single-end case
+                    # (incl. dynamic_cn_end) yields a clean face_{idx}_{slug}.mp4.
+                    base = f"face_{face_idx}_{slug}" if multi_face else out_path.stem
                     parts = []
-                    if multi_face:
-                        parts.append(f"face{face_idx}")
-                    if bool(args.weights) or len(weights) > 1:
+                    if len(weights) > 1:
                         parts.append(f"w{f'{w:.2f}'.replace('.', 'p')}")
-                    if bool(args.ends) or args.dynamic_cn_end or len(ends) > 1:
+                    if bool(args.ends) or len(ends) > 1:
                         estr = f"{e:.3f}".rstrip("0").rstrip(".").replace(".", "p")
                         parts.append(f"e{estr}")
                     suffix = "_" + "_".join(parts) if parts else ""
-                    target = out_path.with_name(
-                        f"{out_path.stem}{suffix}{out_path.suffix}"
-                    )
+                    target = out_path.with_name(f"{base}{suffix}{out_path.suffix}")
                 save_video(frames, target, fps=args.fps)
                 print(f"[done] wrote {target}  (face={face_idx}, w={w}, end={e})")
     return 0

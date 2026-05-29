@@ -229,6 +229,12 @@ wan-beta-*-*.err
 training_cards/*_results.json
 training_cards/*_smoke_results.json
 
+# Eval per-video CSVs are run artifacts; summary JSONs + plots are kept as refs.
+analysis/results/*.csv
+# Large vendored eval checkpoints (kept out of the repo; staged from $HOME).
+analysis/third_party/viclip/*.pth
+analysis/third_party/aesthetic/*.pth
+
 
 #Misc
 .vscode/

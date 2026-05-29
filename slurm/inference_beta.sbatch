@@ -1,7 +1,10 @@
 #!/bin/bash
 #SBATCH --job-name=wan-beta-infer
 #SBATCH --partition=dmb
-#SBATCH --nodelist=hpc-node09
+# Only hpc-node07 / hpc-node09 (L40 48GB) and ctit092 (A40 45GB) are suitable.
+# Exclude ctit084/085 (RTX6000 24GB, too little VRAM) and hpc-node31 (Blackwell,
+# needs the wan22-bw env). Slurm picks whichever of the three is free.
+#SBATCH --exclude=ctit084,ctit085,hpc-node31
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1
 #SBATCH --time=24:00:00
@@ -145,6 +148,9 @@ export SLUG=${SLUG:-}                                # blank → canonical decla
                                                      # baseline runner. Set SLUG explicitly to override.
 export OUTPUT_DIR=${OUTPUT_DIR:-$WAN_BETA_OUT/$RUN_TAG}
 export STEPS=${STEPS:-100}
+export NUM_FRAMES=${NUM_FRAMES:-9}                   # clip length. Script default is 9;
+                                                     # set 61 to match the vanilla/PTD/CN+PTD
+                                                     # sets for a fair quantitative comparison.
 export GUIDANCE=${GUIDANCE:-5.0}
 export CN_WEIGHT=${CN_WEIGHT:-1.0}                   # ignored when WEIGHTS is set
 export CN_STRIDE=${CN_STRIDE:-3}                     # CN-residual layer stride. 3 matches how
@@ -197,6 +203,7 @@ CMD=(python -m training.run_inference_beta
     --cache_dir "$WAN_BETA_CACHE"
     --output_path "$OUTPUT_DIR/${RUN_TAG}.mp4"
     --face_idxs "$FACE_IDXS"
+    --num_frames "$NUM_FRAMES"
     --num_inference_steps "$STEPS"
     --guidance_scale "$GUIDANCE"
     --controlnet_weight "$CN_WEIGHT"
