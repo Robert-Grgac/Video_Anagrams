@@ -39,7 +39,12 @@ INFER_ROOT = Path(
 )
 
 _DEFAULT_DIRS = {
-    "vanilla": "wan_vanilla_100",
+    # The "vanilla" slot is the reference baseline for FVD / LPIPS and the
+    # source of the baseline aesthetic/RetinaFace/viclip scores. It now points
+    # at the TI2V-5B baseline (wan_ti2v_100) instead of the plain T2V vanilla
+    # set. The KEY stays "vanilla" because eval_fvd.py / eval_lpips_vanilla.py
+    # resolve the reference via the hardcoded CONDITIONS["vanilla"].
+    "vanilla": "wan_ti2v_100",
     "ptd_only": "ptd_og_pipeline_100_fair",
     "cn_only": "beta008_100_fair",
     "cn_ptd": "ptd_cn_final_cfg5_cnw2p5",

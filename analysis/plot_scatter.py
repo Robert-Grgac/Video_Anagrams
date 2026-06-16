@@ -17,6 +17,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+from matplotlib.lines import Line2D  # noqa: E402
 import pandas as pd  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -56,21 +57,32 @@ def _scatter(ax, merged: pd.DataFrame, xlabel: str, ylabel: str):
         if g.empty:
             continue
         ax.scatter(
-            g["x"], g["y"], s=28, alpha=0.7, label=cond,
+            g["x"], g["y"], s=28, alpha=0.55, label=cond,
             color=COND_COLORS.get(cond, None), edgecolors="none",
         )
-    # PTD-only mean = reference operating point.
-    ptd = merged[merged["condition"] == "ptd_only"]
-    if not ptd.empty:
-        mx, my = ptd["x"].mean(), ptd["y"].mean()
-        ax.axvline(mx, color=COND_COLORS["ptd_only"], ls="--", lw=0.8, alpha=0.5)
-        ax.axhline(my, color=COND_COLORS["ptd_only"], ls="--", lw=0.8, alpha=0.5)
-        ax.scatter([mx], [my], marker="*", s=320, color=COND_COLORS["ptd_only"],
-                   edgecolors="black", linewidths=1.0, zorder=5,
-                   label="ptd_only mean (operating point)")
+    # Per-condition cluster means (centroid of each color group).
+    for cond in COND_ORDER:
+        g = merged[merged["condition"] == cond]
+        if g.empty:
+            continue
+        ax.scatter(
+            [g["x"].mean()], [g["y"].mean()],
+            marker="X", s=240, color=COND_COLORS.get(cond, None),
+            edgecolors="black", linewidths=1.4, zorder=5,
+        )
+    # Single legend entry covering all cluster-mean markers (color matches each
+    # condition's scatter; the X-with-black-edge form is what's shared).
+    mean_handle = Line2D(
+        [], [], marker="X", linestyle="None", markersize=11,
+        markerfacecolor="white", markeredgecolor="black", markeredgewidth=1.4,
+        label="condition mean",
+    )
+    handles, labels = ax.get_legend_handles_labels()
+    handles.append(mean_handle)
+    labels.append(mean_handle.get_label())
+    ax.legend(handles, labels, fontsize=7, loc="best")
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    ax.legend(fontsize=7, loc="best")
     ax.grid(True, alpha=0.2)
 
 
@@ -82,6 +94,19 @@ def main() -> int:
     p.add_argument("--retina_col", default="det_rate",
                    choices=["det_rate", "mean_conf", "max_conf"],
                    help="which RetinaFace column to use on the face axis")
+    p.add_argument("--vanilla_mask", type=str, default=None,
+                   help="Path to a Python file exposing 'manual_face_labeling' "
+                        "(dict[filename->flag]). When set, restrict to slugs "
+                        "where flag==1. Default scope = vanilla only (cleans "
+                        "its detector noise floor without altering the methods); "
+                        "use --mask_all_conditions to apply the slug subset to "
+                        "every condition.")
+    p.add_argument("--mask_all_conditions", action="store_true",
+                   help="With --vanilla_mask: filter ALL conditions to the "
+                        "flag==1 slug subset (apples-to-apples on the same "
+                        "prompt subset).")
+    p.add_argument("--retina_only", action="store_true",
+                   help="Only render the two RetinaFace-axis plots.")
     args = p.parse_args()
 
     results_dir = Path(args.results_dir)
@@ -92,17 +117,43 @@ def main() -> int:
     face_axes["retinaface"] = ("retinaface.csv", args.retina_col,
                                f"RetinaFace {args.retina_col}")
 
+    # Optional vanilla flag mask. Default scope = vanilla only (cleans its
+    # detector noise floor caused by natural scene people, without touching
+    # the methods).
+    flag1_slugs = None
+    conds_to_filter = None
+    if args.vanilla_mask:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("_mask", args.vanilla_mask)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        labels = mod.manual_face_labeling
+        flag1_slugs = {k.rsplit(".", 1)[0] for k, v in labels.items() if v == 1}
+        conds_to_filter = COND_ORDER if args.mask_all_conditions else ["vanilla"]
+        print(f"[mask] {len(flag1_slugs)}/{len(labels)} flag==1 slugs; "
+              f"filter applied to: {conds_to_filter}")
+
+    def _apply_mask(df):
+        if flag1_slugs is None:
+            return df
+        keep = (~df["condition"].isin(conds_to_filter)) | df["slug"].isin(flag1_slugs)
+        return df[keep]
+
+    suffix = "_facefree" if args.vanilla_mask else ""
+
     written = []
     for pkey, (pf, pcol, plabel) in PROMPT_AXES.items():
-        px = _load(results_dir, pf, pcol).rename(columns={"value": "x"})
+        px = _apply_mask(_load(results_dir, pf, pcol)).rename(columns={"value": "x"})
         for fkey, (ff, fcol, flabel) in face_axes.items():
-            fy = _load(results_dir, ff, fcol).rename(columns={"value": "y"})
+            if args.retina_only and fkey != "retinaface":
+                continue
+            fy = _apply_mask(_load(results_dir, ff, fcol)).rename(columns={"value": "y"})
             merged = px.merge(fy[["condition", "face_idx", "y"]],
                               on=["condition", "face_idx"], how="inner")
             fig, ax = plt.subplots(figsize=(6.5, 6))
             _scatter(ax, merged, plabel, flabel)
             ax.set_title(f"{plabel}  vs  {flabel}", fontsize=10)
-            out = plots_dir / f"scatter_{pkey}__{fkey}.png"
+            out = plots_dir / f"scatter_{pkey}__{fkey}{suffix}.png"
             fig.tight_layout()
             fig.savefig(out, dpi=150)
             plt.close(fig)

@@ -106,18 +106,32 @@ def main() -> int:
     )
     print(f"[fvd] vanilla (sanity floor): {scores['vanilla']:.6f}")
 
-    out = {
-        "backbone": "i3d",
-        "ref": vanilla_dir.name,
-        "scores": scores,
-        "n_per_set": n_real,
-        "clip_len": int(clip_len),
-    }
     results_dir = Path(args.results_dir)
     results_dir.mkdir(parents=True, exist_ok=True)
     path = results_dir / f"{METRIC}.json"
+
+    # Idempotent per-condition merge (mirrors write_rows for CSV metrics): if a
+    # prior fvd.json exists, keep its scores for conditions we didn't recompute
+    # this run, and overwrite the ones we did. Without this, passing
+    # EVAL_CONDITIONS="cn_only" would clobber ptd_only / cn_ptd entries.
+    merged_scores: dict[str, float] = {}
+    if path.exists():
+        try:
+            merged_scores = dict(json.loads(path.read_text()).get("scores", {}))
+        except Exception as e:
+            print(f"[warn] could not parse existing {path} ({e}); overwriting")
+            merged_scores = {}
+    merged_scores.update(scores)
+
+    out = {
+        "backbone": "i3d",
+        "ref": vanilla_dir.name,
+        "scores": merged_scores,
+        "n_per_set": n_real,
+        "clip_len": int(clip_len),
+    }
     path.write_text(json.dumps(out, indent=2))
-    print(f"[write] {path}")
+    print(f"[write] {path}  (scored this run: {sorted(scores)})")
     return 0
 
 

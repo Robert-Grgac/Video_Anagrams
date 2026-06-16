@@ -62,76 +62,75 @@ width = 528
 num_frames = 61
 num_inference_steps = 101
 guidance_scale = 7.0
-#Gridearch parameters
-asset_names_list = ["face_0", "face_1", "face_2", "face_3", "face_4"]
-prompt_list = [prompt1,prompt2]
-inital_alpha_list = [ 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3]
-transfer_steps_list= [(5,2), (10,5),(15,7), (20,10), (25,12), (30,15), (45,22)]
-ref_latents_dir_list = ["/home/s2710099/cache/wan-beta/deterministic_invert_faces_528x528x61/face_0", 
-                        "/home/s2710099/cache/wan-beta/deterministic_invert_faces_528x528x61/face_1", 
-                        "/home/s2710099/cache/wan-beta/deterministic_invert_faces_528x528x61/face_2", 
-                        "/home/s2710099/cache/wan-beta/deterministic_invert_faces_528x528x61/face_3", 
-                        "/home/s2710099/cache/wan-beta/deterministic_invert_faces_528x528x61/face_4"]
+# Single run: heuristic 4 (PI controller on spectral energy ratio), prompt2 + face_1
+asset_name = "face_1"
+prompt = prompt2
+ref_dir = "/home/s2710099/cache/wan-beta/deterministic_invert_faces_528x528x61/face_1"
 
-# Heuristic grid search
-
-direct_transfer_steps= 45
+# PTM schedule
+direct_transfer_steps = 45
 decayed_transfer_steps = 22
 initial_alpha = 0.4
-energy_target_ratios_list = [0.9, 0.95, 0.97, 0.99]
+
+# Heuristic 4 (energy-ratio PI controller) parameters
+energy_target = 0.95
+Kp_energy = 2.0
+Ki_energy = 0.1
+max_alpha_delta = 0.05
+
+run_name = f"{asset_name}_prompt2_h4"
+output_dir = "/home/s2710099/outputs/inference/ptd_h4"
+os.makedirs(output_dir, exist_ok=True)
+
+with wandb.init(
+    project="PTD_inference_original_pipeline",
+    name=run_name,
+    config={
+        "description": "Single heuristic-4 (energy-ratio PI controller) run.",
+        "asset_name": asset_name,
+        "prompt": prompt,
+        "ref_latents_dir": ref_dir,
+        "direct_transfer_steps": direct_transfer_steps,
+        "decayed_transfer_steps": decayed_transfer_steps,
+        "initial_alpha": initial_alpha,
+        "energy_target": energy_target,
+        "Kp_energy": Kp_energy,
+        "Ki_energy": Ki_energy,
+        "max_alpha_delta": max_alpha_delta,
+    }
+) as run:
+    video = pipe(
+            # Standard params
+                prompt=prompt,
+                negative_prompt=negative_prompt,
+                height=height,
+                width=width,
+                num_frames=num_frames,
+                num_inference_steps=num_inference_steps,
+                latents=None,
+                guidance_scale=0.0, #NO CLASSIFIER FREE GUIDANCE FOR HEURISTIC GRID SEARCH
+            #PTM params
+                direct_transfer_steps=direct_transfer_steps,
+                decayed_transfer_steps=decayed_transfer_steps,
+                exponent=0.5,
+                initial_alpha=initial_alpha,
+                ref_latents_dir=ref_dir,
+                use_blending_heuristic_version_1=False,
+                use_blending_heuristic_version_2=False,
+                use_blending_heuristic_version_3=False,
+                use_blending_heuristic_version_4=True,
+                energy_target=energy_target,
+                Kp_energy=Kp_energy,
+                Ki_energy=Ki_energy,
+                max_alpha_delta=max_alpha_delta,
+        )
 
 
-for pidx, prompt in enumerate(prompt_list):
-    for idx, ref_dir in enumerate(ref_latents_dir_list):
-        run_name = f"{asset_names_list[idx]}_prompt{pidx+1}"
-        with wandb.init(
-            project="PTD_inference_original_pipeline",
-            name=run_name,
-            config={
-                "description": "Looking for the best measurement for the PI controller in WanPTD.",
-                "asset_name": asset_names_list[idx],
-                "prompt_idx": pidx+1,
-                "prompt": prompt,
-                "ref_latents_dir": ref_dir,
-                "direct_transfer_steps": direct_transfer_steps,
-                "decayed_transfer_steps": decayed_transfer_steps,
-                "initial_alpha": initial_alpha,
-                "Kp": 0.5,
-                "Ki": 0.2,
-                "max_alpha_delta": 0.05,
-            }
-        ) as run:
-            video = pipe(
-                    # Standard params
-                        prompt=prompt,
-                        negative_prompt=negative_prompt,
-                        height=height,
-                        width=width,
-                        num_frames=num_frames,
-                        num_inference_steps=num_inference_steps,
-                        latents=None, 
-                        guidance_scale=0.0, #NO CLASSIFIER FREE GUIDANCE FOR HEURISTIC GRID SEARCH
-                    #PTM params
-                        direct_transfer_steps=direct_transfer_steps,
-                        decayed_transfer_steps=decayed_transfer_steps,
-                        exponent=0.5,
-                        initial_alpha=initial_alpha,
-                        ref_latents_dir=ref_dir,
-                        use_blending_heuristic_version_1=False,
-                        use_blending_heuristic_version_2=False,
-                        use_blending_heuristic_version_3=True,
-                        use_blending_heuristic_version_4=False,
-                        Kp=0.5,
-                        Ki=0.2,
-                        max_alpha_delta=0.05,
-                )
+    frames = video.get('frames', video.get('images', video))
 
+    frames = frames[0]  # Remove batch dimension -> [frames, height, width, channels]
+    frame_list = [frames[i] for i in range(frames.shape[0])]
 
-            frames = video.get('frames', video.get('images', video))
+    export_to_video(frame_list, f"{output_dir}/{run_name}.mp4")
 
-            frames = frames[0]  # Remove batch dimension -> [frames, height, width, channels]
-            frame_list = [frames[i] for i in range(frames.shape[0])]
-
-            export_to_video(frame_list, f"/home/s2710099/outputs/inference/ptd_og_pipeline/{run_name}.mp4")
-    
 wandb.finish()

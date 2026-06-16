@@ -125,6 +125,12 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--card_path", type=str, default=None)
     p.add_argument("--wandb_project", type=str, default="wan-controlnet-beta")
     p.add_argument("--run_name", type=str, required=True)
+    p.add_argument("--wandb_run_name", type=str, default=None,
+                   help="Optional display name for the wandb run. Defaults to "
+                        "--run_name. Use this to give the wandb run a different "
+                        "name than the checkpoint-file prefix, which always uses "
+                        "--run_name (e.g. files 'beta008_raw_face' but wandb "
+                        "'beta-008-raw-face').")
 
     p.add_argument("--num_frames", type=int, default=9)
     p.add_argument("--height", type=int, default=512)
@@ -447,7 +453,7 @@ def main() -> None:
     wandb_mode = os.environ.get("WANDB_MODE", "online")
     wandb_run = wandb.init(
         project=cfg.wandb_project,
-        name=cfg.run_name,
+        name=cfg.wandb_run_name or cfg.run_name,
         config=vars(cfg),
         mode=wandb_mode,
     )
