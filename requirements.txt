@@ -11,11 +11,18 @@ torch==2.4.1+cu124
 torchvision==0.19.1+cu124
 
 # ----------------------------------------------------------------------------
-# flash-attn — built against the torch above. To actually engage it through
-# diffusers at runtime, export DIFFUSERS_ATTN_BACKEND="flash". On Blackwell
-# (SM 12.0) the kernels won't load — set DIFFUSERS_ATTN_BACKEND="native".
+# flash-attn — pinned as a PREBUILT wheel (direct URL), not the PyPI sdist.
+# The sdist's setup.py imports torch, which fails under pip build isolation
+# (and compiling needs nvcc + lots of RAM). The wheel below matches the pinned
+# torch/python/ABI: cp311 + torch2.4 + cu12 + cxx11abiFALSE.
+#
+# To actually engage it through diffusers at runtime, export
+# DIFFUSERS_ATTN_BACKEND="flash". On Blackwell (SM 12.0) the kernels won't load
+# — set DIFFUSERS_ATTN_BACKEND="native" (flash-attn is then unused, install is
+# still fine). For a different Python/torch/ABI, pick the matching wheel from
+# https://github.com/Dao-AILab/flash-attention/releases/tag/v2.8.3
 # ----------------------------------------------------------------------------
-flash-attn==2.8.3
+flash-attn @ https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.4cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
 
 # Core model stack
 diffusers==0.36.0

@@ -79,6 +79,16 @@ If you prefer pip directly:
 pip install --extra-index-url https://download.pytorch.org/whl/cu124 -r requirements.txt
 ```
 
+> **flash-attn note.** `requirements.txt` pins flash-attn as a *prebuilt wheel*
+> (direct URL) matching the pinned torch/Python/ABI (`cp311 + torch2.4 + cu12 +
+> cxx11abiFALSE`). The PyPI sdist cannot be installed in one pass, its
+> `setup.py` imports torch, which fails under pip's build isolation, and
+> building from source needs `nvcc`. On a different Python/torch/ABI, swap the
+> wheel URL for the matching one from the
+> [flash-attn v2.8.3 release](https://github.com/Dao-AILab/flash-attention/releases/tag/v2.8.3).
+> On Blackwell (SM 12.x) flash-attn is unused at runtime (set
+> `DIFFUSERS_ATTN_BACKEND=native`); the install still succeeds.
+
 ### 3. Train the ControlNet
 
 If you downloaded the pretrained ControlNet checkpoint above, **skip this step.** Otherwise, train it from scratch with:
