@@ -1,0 +1,7 @@
+*
+!.gitignore
+!.gitkeep
+!raw_faces/
+!raw_faces/.gitkeep
+!targets/
+!targets/.gitkeep

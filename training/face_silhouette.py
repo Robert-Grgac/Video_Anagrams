@@ -1,6 +1,6 @@
 """Face structural inputs for the ControlNet — alternatives to canny edges.
 
-Two drop-in replacements for ``precompute_beta.make_canny_uint8``:
+Two silhouette extractors used by ``precompute_training.py``:
 
 - ``make_binary_silhouette_uint8`` (option A) — filled FACE_OVAL polygon, white
   on black. Pure shape, no interior features.

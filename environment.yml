@@ -1,0 +1,25 @@
+# Conda only provides Python + pip here; every Python package is installed via
+# pip from requirements.txt so the dependency list has a single source of truth.
+# The --extra-index-url line is what makes torch==2.4.1+cu124 (and friends)
+# resolve from the PyTorch wheel index — without it pip checks only PyPI and
+# the +cu124 wheels are not visible.
+#
+# Build:
+#   conda env create -f environment.yml
+#   conda activate wan22
+#
+# Update after editing requirements.txt:
+#   conda env update -f environment.yml --prune
+
+name: wan22
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - --extra-index-url https://download.pytorch.org/whl/cu124
+      - -r requirements.txt

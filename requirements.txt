@@ -5,29 +5,41 @@
 #
 # To reinstall on a fresh node:
 #   pip install torch==2.4.1+cu124 torchvision==0.19.1+cu124 \
-#               torchaudio==2.4.1+cu124 \
 #               --index-url https://download.pytorch.org/whl/cu124
 # ----------------------------------------------------------------------------
 torch==2.4.1+cu124
 torchvision==0.19.1+cu124
-torchaudio==2.4.1+cu124
 
 # ----------------------------------------------------------------------------
 # flash-attn — built against the torch above. To actually engage it through
-# diffusers at runtime, export DIFFUSERS_ATTN_BACKEND="flash" in your sbatch
-# script (see slurm/*.sbatch).
+# diffusers at runtime, export DIFFUSERS_ATTN_BACKEND="flash". On Blackwell
+# (SM 12.0) the kernels won't load — set DIFFUSERS_ATTN_BACKEND="native".
 # ----------------------------------------------------------------------------
 flash-attn==2.8.3
 
-# Core inference / model stack
+# Core model stack
 diffusers==0.36.0
 transformers==4.57.6
-peft==0.18.1
+accelerate==1.12.0
+safetensors==0.7.0
+huggingface_hub==0.36.0
 ftfy>=6.1
+# Direct dep of pipeline/wan_t2v_controlnet_pipeline.py (pinned explicitly
+# even though transformers pulls it transitively, to keep the build stable).
+regex>=2024.0.0
 
-# Numerics & I/O
+# Training-only
+bitsandbytes==0.49.1
+ema-pytorch==0.7.7
+wandb==0.25.1
+
+# Precompute (silhouette extraction)
+mediapipe>=0.10
+
+# Numerics, I/O, progress
 numpy==1.26.4
 opencv-python==4.11.0.86
 Pillow==12.0.0
 imageio>=2.31
 imageio-ffmpeg==0.6.0
+tqdm==4.67.1
