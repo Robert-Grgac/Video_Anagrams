@@ -110,7 +110,7 @@ The result is written to `./output.mp4`. Every PTD and ControlNet hyperparameter
 Two example sbatch scripts at the repository root cover the common cases,  copy them and adapt the cluster-specific directives (`--partition`, `--account`, `--constraint`, time and memory limits) to your scheduler:
 
 ```bash
-sbatch setup-example.sbatch       # runs bootstrap.py (precompute + train)
+sbatch bootstrap-example.sbatch   # runs bootstrap.py (precompute + train)
 sbatch inference-example.sbatch   # runs inference.py (one video)
 ```
 

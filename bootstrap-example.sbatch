@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# setup-example.sbatch
+# bootstrap-example.sbatch
 #
 # Example Slurm submit script for `python bootstrap.py` — checks assets,
 # precomputes the training cache (if missing), and trains the ControlNet.
@@ -11,10 +11,10 @@
 # (partition / queue name, account, GPU type, time and memory limits).
 #
 # Submit from the repo root:
-#     sbatch setup-example.sbatch
+#     sbatch bootstrap-example.sbatch
 #
 # Optional wandb logging — set both env vars before submitting:
-#     WANDB_PROJECT=my-project WANDB_RUN_NAME=run-001 sbatch setup-example.sbatch
+#     WANDB_PROJECT=my-project WANDB_RUN_NAME=run-001 sbatch bootstrap-example.sbatch
 # =============================================================================
 #SBATCH --job-name=video-anagrams-train
 #SBATCH --output=slurm-%x-%j.out
