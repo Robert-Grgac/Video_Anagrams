@@ -65,6 +65,30 @@ HED_SRC=$(ls -d "$HED_CACHE_HOME"/snapshots/*/ 2>/dev/null | head -1 | sed 's:/$
 [ -z "$WAN_SRC" ] && { echo "ERROR: Wan model not cached at $WAN_CACHE_HOME" >&2; exit 1; }
 [ -z "$HED_SRC" ] && { echo "ERROR: HED config not cached at $HED_CACHE_HOME" >&2; exit 1; }
 
+# Fail fast if the snapshots are INCOMPLETE. /scratch-shared auto-purges after
+# 14 days and leaves empty stub dirs, so the existence checks above pass but the
+# model then dies at load with "Unrecognized model ... model_type". Verify the
+# key per-component files actually resolve (-s follows symlinks into blobs/).
+check_wan_complete() {
+    local d="$1" miss=0 f
+    for f in model_index.json tokenizer/tokenizer_config.json text_encoder/config.json \
+             vae/config.json transformer/config.json transformer_2/config.json; do
+        [ -s "$d/$f" ] || { echo "  MISSING: $d/$f" >&2; miss=1; }
+    done
+    return $miss
+}
+if ! check_wan_complete "$WAN_SRC"; then
+    echo "ERROR: Wan snapshot at $WAN_SRC is incomplete (scratch-shared purge?)." >&2
+    echo "Re-download on a login node, then resubmit:" >&2
+    echo "  huggingface-cli download Wan-AI/Wan2.2-T2V-A14B-Diffusers --cache-dir /scratch-shared/\$USER/hf-cache/hub" >&2
+    exit 1
+fi
+[ -s "$HED_SRC/config.json" ] || {
+    echo "ERROR: HED config at $HED_SRC is incomplete (scratch-shared purge?). Re-download:" >&2
+    echo "  huggingface-cli download TheDenk/wan2.2-t2v-a14b-controlnet-hed-v1 --cache-dir /scratch-shared/\$USER/hf-cache/hub" >&2
+    exit 1
+}
+
 BETA_CACHE_HOME=${WAN_BETA_CACHE_HOME:-/scratch-shared/$USER/wan-beta-cache}
 # Checkpoints live in $HOME/robert_thesis/checkpoints on Snellius (same names).
 BETA_CKPT_HOME=${WAN_BETA_CKPT_HOME:-$HOME/robert_thesis/checkpoints}

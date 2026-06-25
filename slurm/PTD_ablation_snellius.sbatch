@@ -64,9 +64,37 @@ WAN_CACHE_HOME=/scratch-shared/$USER/hf-cache/hub/models--Wan-AI--Wan2.2-T2V-A14
 WAN_SRC=$(ls -d "$WAN_CACHE_HOME"/snapshots/*/ 2>/dev/null | head -1 | sed 's:/$::')
 [ -z "$WAN_SRC" ] && { echo "ERROR: Wan model not cached at $WAN_CACHE_HOME" >&2; exit 1; }
 
+# Fail fast if the snapshot is INCOMPLETE. /scratch-shared auto-purges after
+# 14 days and leaves empty stub dirs, so the snapshots/<hash>/ existence check
+# above passes but the model then dies at load with "Unrecognized model ...
+# model_type". Verify the key per-component files actually resolve (-s follows
+# symlinks into blobs/ and is false for purged/broken ones).
+check_wan_complete() {
+    local d="$1" miss=0 f
+    for f in model_index.json tokenizer/tokenizer_config.json text_encoder/config.json \
+             vae/config.json transformer/config.json transformer_2/config.json; do
+        [ -s "$d/$f" ] || { echo "  MISSING: $d/$f" >&2; miss=1; }
+    done
+    return $miss
+}
+if ! check_wan_complete "$WAN_SRC"; then
+    echo "ERROR: Wan snapshot at $WAN_SRC is incomplete (scratch-shared purge?)." >&2
+    echo "Re-download on a login node, then resubmit:" >&2
+    echo "  huggingface-cli download Wan-AI/Wan2.2-T2V-A14B-Diffusers --cache-dir /scratch-shared/\$USER/hf-cache/hub" >&2
+    exit 1
+fi
+
 REF_LATENTS_HOME=${REF_LATENTS_HOME:-/scratch-shared/$USER/wan-beta-cache/deterministic_invert_faces_528x528x61}
 [ -d "$REF_LATENTS_HOME" ] \
     || { echo "ERROR: ref latents dir missing at $REF_LATENTS_HOME (rsync it from the local cluster)" >&2; exit 1; }
+# Guard against the empty-stub case (a half-rsync'd / purged dir that exists but
+# holds no latents). Require face_0 to carry its full step_*.pt set.
+_nstep=$(ls "$REF_LATENTS_HOME"/face_0/step_*.pt 2>/dev/null | wc -l)
+[ "$_nstep" -ge 101 ] || {
+    echo "ERROR: $REF_LATENTS_HOME/face_0 has $_nstep step_*.pt files (need >=101)." >&2
+    echo "The invert-latents dir looks empty/partial (scratch purge?). Re-rsync it from the local cluster." >&2
+    exit 1
+}
 
 # ----------------------------------------------------------------------------
 # Stage to node-local $TMPDIR (fast disk).
