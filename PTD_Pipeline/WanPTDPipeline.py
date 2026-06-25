@@ -6,7 +6,6 @@ import os
 import math
 import torch.nn.functional as F
 import numpy as np
-from skimage.feature import hog
 
 from diffusers import WanPipeline
 from diffusers.pipelines.wan.pipeline_output import WanPipelineOutput
@@ -18,6 +17,10 @@ class WanPTDiffusionPipeline(WanPipeline):
     
     @staticmethod
     def _compute_hog_features(frames: torch.Tensor, orientations=9, pixels_per_cell=(8, 8), cells_per_block=(2, 2)):
+        # Lazy import: HOG is only used when do_additional_logging=True. Keeping
+        # it out of module scope means runners that never enable that logging
+        # (e.g. PTD_ablation_experiments) don't need scikit-image installed.
+        from skimage.feature import hog
         video = frames[0].cpu().float()
         C, T, H, W = video.shape
         
